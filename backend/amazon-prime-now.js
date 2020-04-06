@@ -52,12 +52,8 @@ const compareToPrevious = boolean => {
   if (slotAvailabilityArray[0] !== boolean) {
     slotAvailabilityArray.pop();
     slotAvailabilityArray.push(boolean);
-    console.log("array is", slotAvailabilityArray);
-
     if (boolean) {
-      console.log("sending email");
-      console.log(deliverySlot);
-      // sendEmail();
+      sendEmail();
     }
   }
 };
