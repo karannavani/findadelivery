@@ -5,7 +5,7 @@ const { checkAmazonPrimeNow } = require("./amazon-prime-now");
 app = express();
 
 // schedule tasks to be run on the server
-cron.schedule("*/10 * * * *", function() {
+cron.schedule("* * * * *", function() {
   checkAmazonPrimeNow();
 });
 
