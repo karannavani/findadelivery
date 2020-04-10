@@ -76,7 +76,7 @@ const compareToPrevious = boolean => {
 // starts a sub cron to check whether the slot is actually open for long enough to act on it or if it's just a 1 sec blip
 const verifyIfFalseAlarm = () => {
   console.log("verification array looks like", verificationArray);
-
+  let availabilityVerified;
   if (verificationArray.length <= 5) {
     verificationArray.filter(availability => {
       if (!availability) {
@@ -84,15 +84,18 @@ const verifyIfFalseAlarm = () => {
         console.log("stopping function");
         verificationCron.stop();
         return;
-      } else if (availability && verificationArray.length === 5) {
+      } else if (availability && verificationArray.length === 4) {
+        availabilityVerified = true;
         checkFalseAlarm = false;
         console.log("stopping function");
         verificationCron.stop();
-
-        console.log("sending email");
-        sendEmail();
+        return;
       }
     });
+    if (availabilityVerified) {
+      console.log("sending email");
+      sendEmail();
+    }
   }
 };
 
@@ -105,7 +108,7 @@ const runVerificationCron = () => {
 };
 
 // schedule tasks to be run on the server
-cron.schedule("*/5 * * * * *", function() {
+cron.schedule("*/30 * * * * *", function() {
   checkAmazonPrimeNow();
 });
 
