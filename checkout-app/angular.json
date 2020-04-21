@@ -123,6 +123,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "checkout-app"
+    }
+  },
+  "defaultProject": "checkout-app",
+  "cli": {
+    "analytics": "e5a562c7-0925-4094-a1ff-29c2c3cec12b"
+  }
 }
