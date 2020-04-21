@@ -16,6 +16,7 @@
     "cheerio": "^1.0.0-rc.3",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "firebase-admin": "^8.10.0",
     "helmet": "^3.22.0",
     "morgan": "^1.10.0",
     "node-cron": "^2.0.3",
