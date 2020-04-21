@@ -1,11 +1,15 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { auth } from 'firebase';
+import { Observable, Subscription } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
+
 export class AuthenticationService {
+  userDetails: UserDetails;
+
   constructor(
     public afAuth: AngularFireAuth // Inject Firebase auth service
   ) {}
@@ -29,6 +33,16 @@ export class AuthenticationService {
   }
 
   getUserDetails() {
-    this.afAuth.user.subscribe((res) => console.log('user is', res));
+    this.afAuth.user.subscribe((res) => {
+      this.userDetails = res;
+    });
   }
+
+  getUserId() {
+    return this.userDetails.uid;
+  }
+}
+
+export interface UserDetails {
+  uid?: string;
 }
