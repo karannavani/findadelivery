@@ -62,16 +62,17 @@ const updateJob = (id, state) => {
 getJobs();
 
 const startJob = (job) => {
+  updateJob(job.id, "Active");
+
   job.scannerCron = cron.schedule("*/5 * * * * *", function () {
     console.log("running every 5s for", job.data().userId);
-    updateJob(job.id, "Active");
     checkAmazonPrimeNow();
 
     console.log("availabilityVerified is", availabilityStatus());
     if (availabilityStatus()) {
       console.log("stopping from index");
       job.scannerCron.stop();
-      updateJob(job.id, 'Completed');
+      updateJob(job.id, "Completed");
     }
   });
 
