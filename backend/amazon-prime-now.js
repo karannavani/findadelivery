@@ -25,6 +25,7 @@ let verificationArray = [];
 let deliverySlot;
 let checkFalseAlarm = false;
 let verificationCron;
+let availabilityVerified;
 
 const checkAmazonPrimeNow = () => {
   console.log("function running");
@@ -80,7 +81,6 @@ const compareToPrevious = (boolean) => {
 // starts a sub cron to check whether the slot is actually open for long enough to act on it or if it's just a 1 sec blip
 const verifyIfFalseAlarm = () => {
   console.log("verification array looks like", verificationArray);
-  let availabilityVerified;
   if (verificationArray.length <= 5) {
     verificationArray.filter((availability) => {
       if (!availability) {
@@ -114,13 +114,18 @@ const runVerificationCron = () => {
   });
 };
 
+const availabilityStatus = () => {
+  return availabilityVerified;
+}
+
 // schedule tasks to be run on the server
-cron.schedule("* * * * *", function () {
-  checkAmazonPrimeNow();
-});
+// cron.schedule("* * * * *", function () {
+//   checkAmazonPrimeNow();
+// });
 
 app.listen(3125);
 
 module.exports = {
   checkAmazonPrimeNow,
+  availabilityStatus,
 };

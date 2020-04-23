@@ -6,7 +6,10 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const admin = require("firebase-admin");
 const serviceAccount = require("./checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json"); // this is generated from the Service accounts tab in Firebase, the file is hidden for security reasons
-// const { checkAmazonPrimeNow } = require("./amazon-prime-now");
+const {
+  checkAmazonPrimeNow,
+  availabilityStatus,
+} = require("./amazon-prime-now");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -28,49 +31,52 @@ app.use(cors());
 app.use(morgan("combined"));
 
 app.get("/api/trigger-job-check", (req, res) => {
-    res.status(200).send({
-      success: "true",
-      message: "Checking the database",
-    });
-    getJobs();
+  res.status(200).send({
+    success: "true",
+    message: "Checking the database",
+  });
+  getJobs();
 });
 
 const getJobs = () => {
   db.collection("jobs")
     .get()
     .then((jobs) => {
-      jobs.forEach(job => {
-        if (job.data().state === 'Scheduled') {
+      jobs.forEach((job) => {
+        if (job.data().state === "Scheduled") {
           console.log(job.data().state === "Scheduled");
-          console.log('jobs that are scheduled', job.data())
-        } 
-        })
+          startJob(job);
+        }
+      });
     })
     .catch((err) => {
       console.log("Error getting jobs", err);
     });
 };
 
-// // schedule tasks to be run on the server
-// cron.schedule("* * * * * *", function() {
-//   // const item = fetchQueue();
-//   createCron(fetchQueue());
-// });
+const updateJob = (id, state) => {
+  db.doc(`jobs/${id}`)
+    .update({ state })
+    .then((item) => console.log("item is", item));
+};
+getJobs();
 
-// const fetchQueue = () => {
-// // fetching what's in the queue
-// return {
-//   id: 123,
-//   email: "kknavani@gmail.com",
-//   grocery: "Amazon"
-// }
-// }
+const startJob = (job) => {
+  job.scannerCron = cron.schedule("*/5 * * * * *", function () {
+    console.log("running every 5s for", job.data().userId);
+    updateJob(job.id, "Active");
+    checkAmazonPrimeNow();
 
-// const createCron = (item) => {
-// item.cron = cron.schedule("*/3 * * * * *", function() {
-//   console.log('hello');
-// })
-// }
+    console.log("availabilityVerified is", availabilityStatus());
+    if (availabilityStatus()) {
+      console.log("stopping from index");
+      job.scannerCron.stop();
+      updateJob(job.id, 'Completed');
+    }
+  });
+
+  // mock implementation of marking status active in firebase
+};
 
 app.listen(3124, () => {
   console.log("listening on port 3124");
