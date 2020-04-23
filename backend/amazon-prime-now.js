@@ -4,7 +4,8 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const sgMail = require("@sendgrid/mail");
 
-const merchantId = "A3L2WCBX4NBSPG"; //needs to be checked and changed every time there is a new cart
+const merchantId = "A2SQ1LUW1J67MC"; //needs to be checked and changed every time there is a new cart
+// const merchantId = "A3L2WCBX4NBSPG"; // leaving this here since it always returns true and is useful for testing
 const ref = "pn_sc_ptc_bwr";
 const url = `https://primenow.amazon.co.uk/checkout/enter-checkout?merchantId=${merchantId}&ref=${ref}`;
 
