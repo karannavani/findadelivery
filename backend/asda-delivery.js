@@ -41,8 +41,8 @@ const getSlots = (data) => {
     // console.log(data.slot_days);
     data.slot_days.forEach(day => {
       day.slots.forEach(slot => {
-        // console.log(slot.slot_info.status);
-        if (slot.slot_info.status === "UNAVAILABLE") {
+        if (slot.slot_info.status !== "UNAVAILABLE") {
+          console.log(slot.slot_info.status);
           // there is a slot open on date:
           const startTime = new Date(slot.slot_info.start_time);
           const endTime = new Date(slot.slot_info.end_time);
