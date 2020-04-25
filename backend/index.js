@@ -18,6 +18,7 @@ admin.initializeApp({
 const db = admin.firestore();
 const app = express();
 
+const activeCrons = {};
 // adding Helmet to enhance your API's security
 app.use(helmet());
 
@@ -43,8 +44,15 @@ const getJobs = () => {
     .get()
     .then((jobs) => {
       jobs.forEach((job) => {
-        if (job.data().state === "Scheduled") {
-          console.log(job.data().state === "Scheduled");
+        if (
+          job.data().state === "Scheduled" &&
+          !activeCrons[job.data().userId]
+        ) {
+          startJob(job);
+        } else if (
+          job.data().state === "Active" &&
+          !activeCrons[job.data().userId]
+        ) {
           startJob(job);
         }
       });
@@ -55,28 +63,38 @@ const getJobs = () => {
 };
 
 const updateJob = (id, state) => {
-  db.doc(`jobs/${id}`)
-    .update({ state })
-    .then((item) => console.log("item is", item));
+  db.doc(`jobs/${id}`).update({ state });
 };
 getJobs();
 
 const startJob = (job) => {
   updateJob(job.id, "Active");
 
-  job.scannerCron = cron.schedule("*/5 * * * * *", function () {
-    console.log("running every 5s for", job.data().userId);
-    checkAmazonPrimeNow();
+  trackCronJob(job.data().userId);
 
-    console.log("availabilityVerified is", availabilityStatus());
-    if (availabilityStatus()) {
-      console.log("stopping from index");
-      job.scannerCron.stop();
-      updateJob(job.id, "Completed");
+  activeCrons[job.data().userId].scannerCron = cron.schedule(
+    "*/5 * * * * *",
+    function () {
+      console.log("running every 5s for", job.data().userId);
+      checkAmazonPrimeNow();
+      verifyAvailability(job);
     }
-  });
+  );
+};
 
-  // mock implementation of marking status active in firebase
+const trackCronJob = (id) => {
+  if (!activeCrons[id]) {
+    activeCrons[id] = {};
+  }
+};
+
+const verifyAvailability = (job) => {
+  if (availabilityStatus()) {
+    console.log('already available');
+    activeCrons[job.data().userId].scannerCron.stop();
+    updateJob(job.id, "Completed");
+    delete activeCrons[job.data().userId];
+  }
 };
 
 app.listen(3124, () => {
