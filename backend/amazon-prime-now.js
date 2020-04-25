@@ -4,7 +4,8 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const sgMail = require("@sendgrid/mail");
 
-const merchantId = "A3L2WCBX4NBSPG"; //needs to be checked and changed every time there is a new cart
+const merchantId = "A2SQ1LUW1J67MC"; //needs to be checked and changed every time there is a new cart
+// const merchantId = "A3L2WCBX4NBSPG"; // leaving this here since it always returns true and is useful for testing
 const ref = "pn_sc_ptc_bwr";
 const url = `https://primenow.amazon.co.uk/checkout/enter-checkout?merchantId=${merchantId}&ref=${ref}`;
 
@@ -25,6 +26,7 @@ let verificationArray = [];
 let deliverySlot;
 let checkFalseAlarm = false;
 let verificationCron;
+let availabilityVerified;
 
 const checkAmazonPrimeNow = () => {
   console.log("function running");
@@ -80,7 +82,6 @@ const compareToPrevious = (boolean) => {
 // starts a sub cron to check whether the slot is actually open for long enough to act on it or if it's just a 1 sec blip
 const verifyIfFalseAlarm = () => {
   console.log("verification array looks like", verificationArray);
-  let availabilityVerified;
   if (verificationArray.length <= 5) {
     verificationArray.filter((availability) => {
       if (!availability) {
@@ -114,13 +115,18 @@ const runVerificationCron = () => {
   });
 };
 
+const availabilityStatus = () => {
+  return availabilityVerified;
+}
+
 // schedule tasks to be run on the server
-cron.schedule("* * * * *", function () {
-  checkAmazonPrimeNow();
-});
+// cron.schedule("* * * * *", function () {
+//   checkAmazonPrimeNow();
+// });
 
 app.listen(3125);
 
 module.exports = {
   checkAmazonPrimeNow,
+  availabilityStatus,
 };
