@@ -10,11 +10,10 @@ export class HomeComponent implements OnInit {
 
   constructor(private schedulingService: SchedulingService) { }
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void { }
 
-  scheduleJob() {
-   this.schedulingService.createJob();
+  scheduleJob(store) {
+   this.schedulingService.createJob(store);
    console.log('created job');
   }
 
