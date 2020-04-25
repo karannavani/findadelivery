@@ -7,17 +7,21 @@ import { AuthenticationService } from '../authentication/authentication.service'
   providedIn: 'root',
 })
 export class SchedulingService {
-  constructor(private firestore: AngularFirestore, private http: HttpClient, private authService: AuthenticationService) {}
+  constructor(
+    private firestore: AngularFirestore,
+    private http: HttpClient,
+    private authenticationService: AuthenticationService
+  ) {}
 
-  createJob() {
+  createJob(store) {
     const created = new Date().toISOString();
-    const userId = this.authService.getUserId();
+    const userId = this.authenticationService.getUserId();
     const data = {
       userId,
       created,
-      store: 'Amazon',
+      store,
       type: 'Delivery',
-      state: 'Scheduled'
+      state: 'Scheduled',
     };
     return new Promise<any>((resolve, reject) => {
       this.firestore
@@ -25,15 +29,17 @@ export class SchedulingService {
         .add(data)
         .then(
           (res) => {
-            this.triggerJobCheck();
+            this.triggerJobCheck(store);
           },
           (err) => reject(err)
         );
     });
   }
 
-  triggerJobCheck() {
+  triggerJobCheck(store) {
     console.log('triggered');
-    this.http.get('http://localhost:3124/api/trigger-job-check').subscribe();
+    this.http
+      .post('http://localhost:3124/api/trigger-job-check', { store })
+      .subscribe();
   }
 }

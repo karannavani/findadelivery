@@ -6,13 +6,25 @@ import { Observable, Subscription } from 'rxjs';
 @Injectable({
   providedIn: 'root',
 })
-
 export class AuthenticationService {
   userDetails: UserDetails;
 
   constructor(
     public afAuth: AngularFireAuth // Inject Firebase auth service
-  ) {}
+  ) {
+    this.afAuth.onAuthStateChanged((user) => {
+      if (user) {
+        // User is signed in.
+        console.log('there is a user', user);
+        this.userDetails = user;
+        this.getUserId();
+      } else {
+        console.log('user is signed out');
+
+        // User is signed out.
+      }
+    });
+  }
 
   // Sign in with Google
   GoogleAuth() {
@@ -22,13 +34,23 @@ export class AuthenticationService {
   // Auth logic to run auth providers
   AuthLogin(provider) {
     return this.afAuth
-      .signInWithPopup(provider)
-      .then((result) => {
-        console.log('You have been successfully logged in!', result);
-        this.getUserDetails();
+      .setPersistence(auth.Auth.Persistence.LOCAL)
+      .then(() => {
+        this.afAuth
+          .signInWithPopup(provider)
+          .then((result) => {
+            console.log('You have been successfully logged in!', result);
+            this.getUserDetails();
+          })
+          .catch((error) => {
+            console.log(error);
+          });
       })
       .catch((error) => {
-        console.log(error);
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log('Error', errorCode, errorMessage);
       });
   }
 
