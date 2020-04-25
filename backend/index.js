@@ -1,19 +1,19 @@
-const cron = require("node-cron");
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const helmet = require("helmet");
-const morgan = require("morgan");
-const admin = require("firebase-admin");
-const serviceAccount = require("./checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json"); // this is generated from the Service accounts tab in Firebase, the file is hidden for security reasons
+const cron = require('node-cron');
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const admin = require('firebase-admin');
+const serviceAccount = require('./checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json'); // this is generated from the Service accounts tab in Firebase, the file is hidden for security reasons
 const {
   checkAmazonPrimeNow,
   availabilityStatus,
-} = require("./amazon-prime-now");
+} = require('./amazon-prime-now');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://checkout-app-uk.firebaseio.com",
+  databaseURL: 'https://checkout-app-uk.firebaseio.com',
 });
 const db = admin.firestore();
 const app = express();
@@ -29,28 +29,29 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // adding morgan to log HTTP requests
-app.use(morgan("combined"));
+app.use(morgan('combined'));
 
-app.get("/api/trigger-job-check", (req, res) => {
+app.post('/api/trigger-job-check', (req, res) => {
+  console.log('req is', req.body);
   res.status(200).send({
-    success: "true",
-    message: "Checking the database",
+    success: 'true',
+    message: 'Checking the database',
   });
-  getJobs();
+  // getJobs();
 });
 
 const getJobs = () => {
-  db.collection("jobs")
+  db.collection('jobs')
     .get()
     .then((jobs) => {
       jobs.forEach((job) => {
         if (
-          job.data().state === "Scheduled" &&
+          job.data().state === 'Scheduled' &&
           !activeCrons[job.data().userId]
         ) {
           startJob(job);
         } else if (
-          job.data().state === "Active" &&
+          job.data().state === 'Active' &&
           !activeCrons[job.data().userId]
         ) {
           startJob(job);
@@ -58,7 +59,7 @@ const getJobs = () => {
       });
     })
     .catch((err) => {
-      console.log("Error getting jobs", err);
+      console.log('Error getting jobs', err);
     });
 };
 
@@ -68,14 +69,14 @@ const updateJob = (id, state) => {
 getJobs();
 
 const startJob = (job) => {
-  updateJob(job.id, "Active");
+  updateJob(job.id, 'Active');
 
   trackCronJob(job.data().userId);
 
   activeCrons[job.data().userId].scannerCron = cron.schedule(
-    "*/5 * * * * *",
+    '*/5 * * * * *',
     function () {
-      console.log("running every 5s for", job.data().userId);
+      console.log('running every 5s for', job.data().userId);
       checkAmazonPrimeNow();
       verifyAvailability(job);
     }
@@ -92,11 +93,11 @@ const verifyAvailability = (job) => {
   if (availabilityStatus()) {
     console.log('already available');
     activeCrons[job.data().userId].scannerCron.stop();
-    updateJob(job.id, "Completed");
+    updateJob(job.id, 'Completed');
     delete activeCrons[job.data().userId];
   }
 };
 
 app.listen(3124, () => {
-  console.log("listening on port 3124");
+  console.log('listening on port 3124');
 });
