@@ -13,7 +13,7 @@ export class SchedulingService {
     private authenticationService: AuthenticationService
   ) {}
 
-  createJob(store, otherInfo?) {
+  createJob(store, otherInfo?: object) {
     const created = new Date().toISOString();
     const userId = this.authenticationService.getUserId();
     const data = {
@@ -23,6 +23,13 @@ export class SchedulingService {
       type: 'Delivery',
       state: 'Scheduled',
     };
+
+    if (otherInfo) {
+      Object.keys(otherInfo).forEach((key) => {
+        data[key] = otherInfo[key];
+      });
+    }
+
     return new Promise<any>((resolve, reject) => {
       this.firestore
         .collection('jobs')
