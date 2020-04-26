@@ -10,7 +10,11 @@ const {
   checkAmazonPrimeNow,
   amazonAvailabilityStatus,
 } = require("./amazon-prime-now");
-const { checkAsda, asdaAvailabilityStatus } = require("./asda-delivery");
+const {
+  checkAsda,
+  asdaAvailabilityStatus,
+  asdaReset
+} = require("./asda-delivery");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -95,7 +99,7 @@ const asdaCron = (job) => {
       function () {
         console.log("running every 5s for", job.data().userId);
         checkAsda(job.data().postcode);
-        verifyAvailability(job, asdaAvailabilityStatus);
+        verifyAvailability(job, asdaAvailabilityStatus, asdaReset);
       }
     );
 };
@@ -111,12 +115,13 @@ const amazonCron = (job) => {
   );
 };
 
-const verifyAvailability = (job, availabilityCheckingFunction) => {
+const verifyAvailability = (job, availabilityCheckingFunction, resetFunction) => {
   if (availabilityCheckingFunction()) {
     console.log("already available");
     activeCrons[job.data().userId].scannerCron.stop();
     updateJob(job.id, "Completed");
     delete activeCrons[job.data().userId];
+    resetFunction();
   }
 };
 
