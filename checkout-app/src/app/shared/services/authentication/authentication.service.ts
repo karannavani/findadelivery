@@ -7,7 +7,7 @@ import { Observable, Subscription } from 'rxjs';
   providedIn: 'root',
 })
 export class AuthenticationService {
-  userDetails: UserDetails;
+  userDetails = null;
 
   constructor(
     public afAuth: AngularFireAuth // Inject Firebase auth service
@@ -17,10 +17,8 @@ export class AuthenticationService {
         // User is signed in.
         console.log('there is a user', user);
         this.userDetails = user;
-        this.getUserId();
       } else {
         console.log('user is signed out');
-
         // User is signed out.
       }
     });
@@ -63,8 +61,4 @@ export class AuthenticationService {
   getUserId() {
     return this.userDetails.uid;
   }
-}
-
-export interface UserDetails {
-  uid?: string;
 }
