@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { SchedulingService } from '../shared/services/scheduling/scheduling.service';
+import { AuthenticationService } from '../shared/services/authentication/authentication.service';
 
 @Component({
   selector: 'app-home',
@@ -8,7 +9,7 @@ import { SchedulingService } from '../shared/services/scheduling/scheduling.serv
 })
 export class HomeComponent implements OnInit {
 
-  constructor(private schedulingService: SchedulingService) { }
+  constructor(private schedulingService: SchedulingService, private authenticationService: AuthenticationService) { }
 
   ngOnInit(): void { }
 
@@ -16,5 +17,9 @@ export class HomeComponent implements OnInit {
    this.schedulingService.createJob(store);
    console.log('created job');
   }
+
+  // isUserLoggedIn() {
+  //   return this.authenticationService.getUserDetails();
+  // }
 
 }
