@@ -49,7 +49,7 @@ const getSlots = (data) => {
     // console.log(data.slot_days);
     data.slot_days.forEach((day) => {
       day.slots.forEach((slot) => {
-        if (slot.slot_info.status === "UNAVAILABLE" && !availabilityVerified) {
+        if (slot.slot_info.status !== "UNAVAILABLE" && !availabilityVerified) {
           console.log(slot.slot_info.status);
           const startTime = new Date(slot.slot_info.start_time);
           const endTime = new Date(slot.slot_info.end_time);
@@ -82,7 +82,7 @@ const sendEmail = (startTime, endTime) => {
   };
 
   console.log('sending email');
-  // sgMail.send(msg);
+  sgMail.send(msg);
 };
 
 const asdaAvailabilityStatus = () => {

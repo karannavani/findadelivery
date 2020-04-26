@@ -119,10 +119,6 @@ const amazonAvailabilityStatus = () => {
   return availabilityVerified;
 }
 
-// schedule tasks to be run on the server
-// cron.schedule("* * * * *", function () {
-//   checkAmazonPrimeNow();
-// });
 
 app.listen(3125);
 
