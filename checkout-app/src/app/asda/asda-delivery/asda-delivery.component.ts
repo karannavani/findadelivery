@@ -33,7 +33,7 @@ export class AsdaDeliveryComponent implements OnInit {
         .collection('users')
         .add({ userId: this.userId, postcode: this.postcode.value });
     }
-    // this.schedulingService.createJob(store);
+    this.schedulingService.createJob(store, { postcode: this.postcode.value });
     console.log('created job');
   }
 
@@ -64,7 +64,9 @@ export class AsdaDeliveryComponent implements OnInit {
           )
         )
         .subscribe((id) => {
-          this.firestore.doc(`users/${id}`).update({ postcode: this.postcode.value });
+          this.firestore
+            .doc(`users/${id}`)
+            .update({ postcode: this.postcode.value });
         });
     }
   }
