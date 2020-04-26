@@ -115,7 +115,7 @@ const runVerificationCron = () => {
   });
 };
 
-const availabilityStatus = () => {
+const amazonAvailabilityStatus = () => {
   return availabilityVerified;
 }
 
@@ -128,5 +128,5 @@ app.listen(3125);
 
 module.exports = {
   checkAmazonPrimeNow,
-  availabilityStatus,
+  amazonAvailabilityStatus,
 };
