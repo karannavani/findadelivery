@@ -13,7 +13,7 @@ export class SchedulingService {
     private authenticationService: AuthenticationService
   ) {}
 
-  createJob(store) {
+  createJob(store, otherInfo?) {
     const created = new Date().toISOString();
     const userId = this.authenticationService.getUserId();
     const data = {
