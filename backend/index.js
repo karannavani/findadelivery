@@ -1,19 +1,20 @@
-const cron = require('node-cron');
-const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const admin = require('firebase-admin');
-const serviceAccount = require('./checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json'); // this is generated from the Service accounts tab in Firebase, the file is hidden for security reasons
+const cron = require("node-cron");
+const express = require("express");
+const bodyParser = require("body-parser");
+const cors = require("cors");
+const helmet = require("helmet");
+const morgan = require("morgan");
+const admin = require("firebase-admin");
+const serviceAccount = require("./checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json"); // this is generated from the Service accounts tab in Firebase, the file is hidden for security reasons
 const {
   checkAmazonPrimeNow,
-  availabilityStatus,
-} = require('./amazon-prime-now');
+  amazonAvailabilityStatus,
+} = require("./amazon-prime-now");
+const { checkAsda, asdaAvailabilityStatus } = require("./asda-delivery");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: 'https://checkout-app-uk.firebaseio.com',
+  databaseURL: "https://checkout-app-uk.firebaseio.com",
 });
 const db = admin.firestore();
 const app = express();
@@ -29,29 +30,29 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // adding morgan to log HTTP requests
-app.use(morgan('combined'));
+app.use(morgan("combined"));
 
-app.post('/api/trigger-job-check', (req, res) => {
-  console.log('req is', req.body);
+app.post("/api/trigger-job-check", (req, res) => {
+  console.log("req is", req.body);
   res.status(200).send({
-    success: 'true',
-    message: 'Checking the database',
+    success: "true",
+    message: "Checking the database",
   });
-  // getJobs();
+  getJobs();
 });
 
 const getJobs = () => {
-  db.collection('jobs')
+  db.collection("jobs")
     .get()
     .then((jobs) => {
       jobs.forEach((job) => {
         if (
-          job.data().state === 'Scheduled' &&
+          job.data().state === "Scheduled" &&
           !activeCrons[job.data().userId]
         ) {
           startJob(job);
         } else if (
-          job.data().state === 'Active' &&
+          job.data().state === "Active" &&
           !activeCrons[job.data().userId]
         ) {
           startJob(job);
@@ -59,7 +60,7 @@ const getJobs = () => {
       });
     })
     .catch((err) => {
-      console.log('Error getting jobs', err);
+      console.log("Error getting jobs", err);
     });
 };
 
@@ -69,18 +70,17 @@ const updateJob = (id, state) => {
 getJobs();
 
 const startJob = (job) => {
-  updateJob(job.id, 'Active');
+  updateJob(job.id, "Active");
 
   trackCronJob(job.data().userId);
 
-  activeCrons[job.data().userId].scannerCron = cron.schedule(
-    '*/5 * * * * *',
-    function () {
-      console.log('running every 5s for', job.data().userId);
-      checkAmazonPrimeNow();
-      verifyAvailability(job);
-    }
-  );
+  switch (job.data().store) {
+    case "ASDA":
+      console.log("running switch with", job.data().store);
+      return asdaCron(job);
+    case "Amazon":
+      return amazonCron(job);
+  }
 };
 
 const trackCronJob = (id) => {
@@ -89,15 +89,37 @@ const trackCronJob = (id) => {
   }
 };
 
-const verifyAvailability = (job) => {
-  if (availabilityStatus()) {
-    console.log('already available');
+const asdaCron = (job) => {
+    activeCrons[job.data().userId].scannerCron = cron.schedule(
+      "*/5 * * * * *",
+      function () {
+        console.log("running every 5s for", job.data().userId);
+        checkAsda(job.data().postcode);
+        verifyAvailability(job, asdaAvailabilityStatus);
+      }
+    );
+};
+
+const amazonCron = (job) => {
+  activeCrons[job.data().userId].scannerCron = cron.schedule(
+    "*/5 * * * * *",
+    function () {
+      console.log("running every 5s for", job.data().userId);
+      checkAmazonPrimeNow();
+      verifyAvailability(job, amazonAvailabilityStatus);
+    }
+  );
+};
+
+const verifyAvailability = (job, availabilityCheckingFunction) => {
+  if (availabilityCheckingFunction()) {
+    console.log("already available");
     activeCrons[job.data().userId].scannerCron.stop();
-    updateJob(job.id, 'Completed');
+    updateJob(job.id, "Completed");
     delete activeCrons[job.data().userId];
   }
 };
 
 app.listen(3124, () => {
-  console.log('listening on port 3124');
+  console.log("listening on port 3124");
 });
