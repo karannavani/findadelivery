@@ -25,13 +25,6 @@ export class AsdaDeliveryComponent implements OnInit {
     this.checkIfUserExists();
   }
 
-  populatePostcode() {
-    return this.firestore
-      .collection('users', (ref) => ref.where('userId', '==', this.userId))
-      .snapshotChanges()
-      .subscribe((res) => console.log('res is', res));
-  }
-
   scheduleJob(store) {
     if (this.user) {
       this.updatePostCode();
@@ -50,11 +43,11 @@ export class AsdaDeliveryComponent implements OnInit {
       .snapshotChanges()
       .subscribe((res) => {
         if (res.length !== 0) {
-          this.populatePostcode();
-          this.user = res[0];
+          this.user = res[0].payload.doc.data();
+          console.log(this.user);
+          this.postcode.setValue(this.user.postcode);
           console.log('user exists');
         }
-        console.log('no user exists');
       });
   }
 
