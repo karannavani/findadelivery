@@ -6,7 +6,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 let availabilityVerified = false;
 
 const checkAsda = (postcode) => {
-  console.log("running asda");
+  console.log("running asda", postcode);
   axios
     .post("https://groceries.asda.com/api/v3/slot/view", {
       requestorigin: "gi",
@@ -37,7 +37,7 @@ const checkAsda = (postcode) => {
     })
     .then((res) => {
       console.log(`statusCode: ${res.status_code}`);
-      getSlots(res.data.data);
+      // getSlots(res.data.data);
     })
     .catch((error) => {
       console.error(error);
@@ -82,7 +82,7 @@ const sendEmail = (startTime, endTime) => {
   };
 
   console.log('sending email');
-  sgMail.send(msg);
+  // sgMail.send(msg);
 };
 
 const asdaAvailabilityStatus = () => {

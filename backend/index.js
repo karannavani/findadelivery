@@ -10,11 +10,8 @@ const {
   checkAmazonPrimeNow,
   amazonAvailabilityStatus,
 } = require("./amazon-prime-now");
-const {
-  checkAsda,
-  asdaAvailabilityStatus,
-  asdaReset
-} = require("./asda-delivery");
+
+const { AsdaDelivery } = require("./asda-delivery-class");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -59,6 +56,7 @@ const getJobs = () => {
           job.data().state === "Active" &&
           !activeCrons[job.data().userId]
         ) {
+          console.log("state is active");
           startJob(job);
         }
       });
@@ -75,15 +73,25 @@ getJobs();
 
 const startJob = (job) => {
   updateJob(job.id, "Active");
-
-  trackCronJob(job.data().userId);
-
-  switch (job.data().store) {
-    case "ASDA":
-      console.log("running switch with", job.data().store);
-      return asdaCron(job);
-    case "Amazon":
-      return amazonCron(job);
+  if (!activeCrons[job.data().userId]) {
+    switch (job.data().store) {
+      case "ASDA":
+        console.log(
+          "running switch with",
+          job.data().store,
+          "for id",
+          job.data().userId,
+          "because active crons looks like",
+          activeCrons
+        );
+        trackCronJob(job.data().userId);
+        // return activeCrons[job.data().userId].asdaCron = new AsdaCron(job);
+        break;
+      // return asdaCron(job);
+      case "Amazon":
+        trackCronJob(job.data().userId);
+        return amazonCron(job);
+    }
   }
 };
 
@@ -93,16 +101,93 @@ const trackCronJob = (id) => {
   }
 };
 
-const asdaCron = (job) => {
-    activeCrons[job.data().userId].scannerCron = cron.schedule(
-      "*/5 * * * * *",
-      function () {
-        console.log("running every 5s for", job.data().userId);
-        checkAsda(job.data().postcode);
-        verifyAvailability(job, asdaAvailabilityStatus, asdaReset);
-      }
-    );
+const asdaCron = cron.schedule("*/20 * * * * *", () => {
+  // get asda jobs from the database
+  fetchAsda("ASDA")
+  .then(snapshot => {
+    snapshot.forEach(job => {
+      console.log(job.data()) 
+      activeCrons[job.data().userId].scan = new AsdaDelivery(job.data().postcode);
+    })
+  })
+});
+
+// asdaCron.start();
+
+const fetchAsda = async (store) => {
+  try {
+    const snapshot = await db.collection("jobs")
+      .where("store", "==", store)
+      .where("state", "in", ['Scheduled', 'Active'])
+      .get();
+    if (snapshot.empty) {
+      console.log("No matching documents.");
+      return;
+    }
+    return snapshot;
+  }
+  catch (err) {
+    console.log("Error getting documents", err);
+  }
 };
+
+// class AsdaCron {
+//   constructor(job) {
+//     this.job = job;
+//     this.instantiateCron(job);
+//   }
+
+//   instantiateCron(job) {
+//     activeCrons[this.job.data().userId].asdaDelivery = new AsdaDelivery();
+
+//     activeCrons[job.data().userId].asdaDelivery.cron = new CronJob(
+//       "*/30 * * * * *",
+//       function () {
+//         console.log("running every 10s for", job.data().userId);
+//         activeCrons[job.data().userId].asdaDelivery.checkAsda(
+//           job.data().postcode
+//         );
+//       }
+//     );
+
+//     activeCrons[job.data().userId].asdaDelivery.cron.start();
+//   }
+// }
+// const asdaCron = (job) => {
+//   activeCrons[job.data().userId].asdaDelivery = new AsdaDelivery();
+
+//   activeCrons[job.data().userId].asdaDelivery.cron = new CronJob(
+//     "*/30 * * * * *",
+//     function () {
+//       console.log("running every 10s for", job.data().userId);
+//       activeCrons[job.data().userId].asdaDelivery.checkAsda(
+//         job.data().postcode
+//       );
+//     }
+//   );
+//   activeCrons[job.data().userId].asdaDelivery.cron.start();
+
+// if (!activeCrons[job.data().userId].asdaDelivery) {
+//   activeCrons[job.data().userId].asdaDelivery = new AsdaDelivery();
+//   activeCrons[job.data().userId].asdaDelivery.cron = cron.schedule(
+//     "*/10 * * * * *",
+//     function () {
+//       console.log("running every 10s for", job.data().userId);
+//       activeCrons[job.data().userId].asdaDelivery.checkAsda(
+//         job.data().postcode
+//       );
+//     }
+//   );
+// }
+// activeCrons[job.data().userId].scannerCron = cron.schedule(
+//   "*/20 * * * * *",
+//   function () {
+//     console.log("running every 10s for", job.data().userId);
+//     checkAsda(job.data().postcode);
+//     verifyAvailability(job, asdaAvailabilityStatus, asdaReset);
+//   }
+// );
+// };
 
 const amazonCron = (job) => {
   activeCrons[job.data().userId].scannerCron = cron.schedule(
@@ -115,7 +200,11 @@ const amazonCron = (job) => {
   );
 };
 
-const verifyAvailability = (job, availabilityCheckingFunction, resetFunction) => {
+const verifyAvailability = (
+  job,
+  availabilityCheckingFunction,
+  resetFunction
+) => {
   if (availabilityCheckingFunction()) {
     console.log("already available");
     activeCrons[job.data().userId].scannerCron.stop();
