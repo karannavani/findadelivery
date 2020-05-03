@@ -13,7 +13,7 @@ export class SchedulingService {
     private authenticationService: AuthenticationService
   ) {}
 
-  createJob(store, otherInfo?: object) {
+  createJob(store, options?: object) {
     const created = new Date().toISOString();
     const userId = this.authenticationService.getUserId();
     const data = {
@@ -24,9 +24,9 @@ export class SchedulingService {
       state: 'Scheduled',
     };
 
-    if (otherInfo) {
-      Object.keys(otherInfo).forEach((key) => {
-        data[key] = otherInfo[key];
+    if (options) {
+      Object.keys(options).forEach((key) => {
+        data[key] = options[key];
       });
     }
 
@@ -36,7 +36,7 @@ export class SchedulingService {
         .add(data)
         .then(
           (res) => {
-            this.triggerJobCheck(store);
+            // this.triggerJobCheck(store);
           },
           (err) => reject(err)
         );
