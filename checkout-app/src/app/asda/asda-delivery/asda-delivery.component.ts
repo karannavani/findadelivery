@@ -33,7 +33,10 @@ export class AsdaDeliveryComponent implements OnInit {
         .collection('users')
         .add({ userId: this.userId, postcode: this.postcode.value });
     }
-    this.schedulingService.createJob(store, { postcode: this.postcode.value });
+    this.schedulingService.createJob(store, {
+      postcode: this.postcode.value,
+      worker: 'asdaDeliveryScan',
+    });
     console.log('created job');
   }
 
