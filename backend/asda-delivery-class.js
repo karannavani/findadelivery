@@ -6,7 +6,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 class AsdaDelivery {
   constructor(postcode) {
     this.availabilityVerified = false;
-    this.checkAsda(postcode);
+    // this.checkAsda(postcode);
   }
   checkAsda = (postcode) => {
     console.log("running asda", postcode);
