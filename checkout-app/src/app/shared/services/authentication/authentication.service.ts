@@ -61,4 +61,8 @@ export class AuthenticationService {
   getUserId() {
     return this.userDetails.uid;
   }
+
+  isAuthenticated() {
+    return this.afAuth.authState;
+  }
 }

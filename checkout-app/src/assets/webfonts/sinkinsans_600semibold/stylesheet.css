@@ -1,0 +1,13 @@
+@font-face {
+    font-family: 'sinkin_sans600_semibold';
+    src: url('SinkinSans-600SemiBold-webfont.eot');
+    src: url('SinkinSans-600SemiBold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('SinkinSans-600SemiBold-webfont.woff2') format('woff2'),
+         url('SinkinSans-600SemiBold-webfont.woff') format('woff'),
+         url('SinkinSans-600SemiBold-webfont.ttf') format('truetype'),
+         url('SinkinSans-600SemiBold-webfont.svg#sinkin_sans600_semibold') format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
