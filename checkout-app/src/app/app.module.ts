@@ -13,6 +13,7 @@ import { LoginComponent } from './login/login.component';
 import { AsdaDeliveryComponent } from './asda/asda-delivery/asda-delivery.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { AuthGuard } from './shared/guards/auth.guard';
+import { HeaderComponent } from './header/header.component';
 
 @NgModule({
   declarations: [
@@ -20,6 +21,7 @@ import { AuthGuard } from './shared/guards/auth.guard';
     HomeComponent,
     LoginComponent,
     AsdaDeliveryComponent,
+    HeaderComponent,
   ],
   imports: [
     BrowserModule,
