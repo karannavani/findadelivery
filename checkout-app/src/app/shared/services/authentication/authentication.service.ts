@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { auth } from 'firebase';
 import { Observable, Subscription } from 'rxjs';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root',
@@ -10,7 +11,8 @@ export class AuthenticationService {
   userDetails = null;
 
   constructor(
-    public afAuth: AngularFireAuth // Inject Firebase auth service
+    public afAuth: AngularFireAuth, // Inject Firebase auth service
+    public router: Router
   ) {
     this.afAuth.onAuthStateChanged((user) => {
       if (user) {
@@ -38,6 +40,7 @@ export class AuthenticationService {
           .signInWithPopup(provider)
           .then((result) => {
             console.log('You have been successfully logged in!', result);
+            this.router.navigate(['home']);
             this.getUserDetails();
           })
           .catch((error) => {
@@ -64,5 +67,11 @@ export class AuthenticationService {
 
   isAuthenticated() {
     return this.afAuth.authState;
+  }
+
+  signOut() {
+    this.afAuth.signOut().then(() => {
+      this.router.navigate(['login']);
+    });
   }
 }
