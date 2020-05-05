@@ -13,12 +13,11 @@
   </button>
   <div class="collapse navbar-collapse justify-content-end" id="navbarNavAltMarkup">
     <div class="navbar-nav" *ngIf="!(isAuthenticated$ | async)">
-      <a class="nav-item nav-link active" href="#">Sign in</a>
+      <a class="nav-item nav-link active" routerLink="/login">Sign in</a>
     </div>
 
     <div *ngIf="isAuthenticated$ | async" class="navbar-nav">
-      <a class="nav-item nav-link" href="#">Profile</a>
-      <a class="nav-item nav-link" href="#">Sign out</a>
+      <a class="nav-item nav-link" routerLink="" (click)="signOut()">Sign out</a>
     </div>
   </div>
 </nav>
