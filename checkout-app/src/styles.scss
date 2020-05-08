@@ -1,21 +1,42 @@
 /* You can add global styles to this file, and also import other style files */
 @import "./assets/webfonts/sinkinsans_400regular/stylesheet.css";
-
 body {
   font-family: "sinkin_sans400_regular";
   background-color: #f7f7f7;
+}
+
+button {
+  border-radius: 15px;
+}
+
+.btn-primary {
+  background-color: #553ed8;
+  border-color: #553ed8;
+  &:hover {
+    background-color: #2913a5;
+    border-color: #2913a5;
+  }
 }
 
 .navbar {
   background-color: #553ed8;
   box-shadow: -2px 200px 275px -151px rgba(0, 0, 0, 1);
 
+  &-brand {
+    font-size: 1rem;
+    text-transform: uppercase;
+  }
+
   &-toggler {
     border: none;
   }
 
   .nav-link {
-    color: rgba($color: #ffffff, $alpha: 1.0) !important;
+    color: rgba($color: #e4e4e4, $alpha: 0.9);
+    font-size: 1rem;
+    &:hover, .active {
+      color: rgba($color: #fff, $alpha: 1) !important;
+    }
   }
 }
 
@@ -26,6 +47,7 @@ body {
 .supermarket-card {
   padding: 2rem;
   margin: 3rem 0;
+  size: 80%;
   border: none;
   -webkit-box-shadow: -2px 14px 103px -4px rgba(0, 0, 0, 0.2);
   -moz-box-shadow: -2px 14px 103px -4px rgba(0, 0, 0, 0.2);
@@ -37,7 +59,16 @@ body {
   }
 }
 
-h2, h3, h4 {
+.form-group {
+  small {
+    margin: 5px 0 10px 0;
+    display: block;
+  }
+}
+
+h2,
+h3,
+h4 {
   color: #2f13cd;
 }
 
