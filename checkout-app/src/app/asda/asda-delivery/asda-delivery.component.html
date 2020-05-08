@@ -1,9 +1,14 @@
 <div class="container">
-  <label>
-    Postcode
-    <input type="text" [formControl]="postcode" />
-  </label>
-  <div>
-    <button (click)="scheduleJob('ASDA')" class="btn-primary">Look for an ASDA slot!</button>
+  <div class="col-12 col-lg-6 col-md-7">
+    <div class="form-group">
+      <label for="postcode">Your Postcode</label>
+      <small id="passwordHelpInline" class="text-muted">
+        e.g. SW1A 1AA
+      </small>
+      <input type="text" class="form-control" [formControl]="postcode" />
+    </div>
+    <button type="button" class="btn btn-primary" (click)="scheduleJob('ASDA')">
+      Email me when a slot is found
+    </button>
   </div>
 </div>
