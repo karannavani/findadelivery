@@ -119,6 +119,10 @@ const amazonAvailabilityStatus = () => {
   return availabilityVerified;
 }
 
+cron.schedule("*/10 * * * * *", () => {
+  checkAmazonPrimeNow();
+})
+
 
 app.listen(3125);
 
