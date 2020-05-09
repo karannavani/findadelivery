@@ -1,16 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { SchedulingService } from 'src/app/shared/services/scheduling/scheduling.service';
 import { FormControl } from '@angular/forms';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { AuthenticationService } from 'src/app/shared/services/authentication/authentication.service';
 import { map } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-asda-delivery',
   templateUrl: './asda-delivery.component.html',
   styleUrls: ['./asda-delivery.component.scss'],
 })
-export class AsdaDeliveryComponent implements OnInit {
+export class AsdaDeliveryComponent implements OnInit, OnDestroy {
   constructor(
     private firestore: AngularFirestore,
     private schedulingService: SchedulingService,
@@ -18,59 +19,62 @@ export class AsdaDeliveryComponent implements OnInit {
   ) {}
 
   postcode = new FormControl('');
-  userId = this.authenticationService.getUserId();
-  user = null;
+  userPostcode = null;
+  searchInProgress = false;
+  subscriptions = new Subscription();
 
   ngOnInit(): void {
-    this.checkIfUserExists();
+    this.checkIfPostcodeExists();
+    this.isSearchInProgress();
   }
 
-  scheduleJob(store) {
-    if (this.user) {
-      this.updatePostCode();
+  scheduleJob(store: string) {
+    if (this.userPostcode && this.userPostcode !== this.postcode.value) {
+      this.firestore
+        .doc(`users/${this.authenticationService.getUserId()}`)
+        .update({ postcode: this.postcode.value });
     } else {
       this.firestore
-        .collection('users')
-        .add({ userId: this.userId, postcode: this.postcode.value });
+        .doc(`users/${this.authenticationService.getUserId()}`)
+        .update({ postcode: this.postcode.value });
     }
     this.schedulingService.createJob(store, {
       postcode: this.postcode.value,
       worker: 'asdaDeliveryScan',
     });
-    console.log('created job');
+
+    this.searchInProgress = true;
   }
 
-  checkIfUserExists() {
-    this.firestore
-      .collection('users', (ref) => ref.where('userId', '==', this.userId))
-      .snapshotChanges()
+  checkIfPostcodeExists() {
+      this.subscriptions.add(this.firestore
+      .doc(`users/${this.authenticationService.getUserId()}`)
+      .get()
       .subscribe((res) => {
-        if (res.length !== 0) {
-          this.user = res[0].payload.doc.data();
-          console.log(this.user);
-          this.postcode.setValue(this.user.postcode);
-          console.log('user exists');
+        if (res.data().postcode) {
+          this.userPostcode = res.data().postcode;
+          this.postcode.setValue(this.userPostcode);
         }
-      });
+      }));
   }
 
-  updatePostCode() {
-    if (this.user.postcode !== this.postcode.value) {
-      return this.firestore
-        .collection('users', (ref) => ref.where('userId', '==', this.userId))
-        .snapshotChanges()
-        .pipe(
-          map((users) =>
-            users.map((user) => {
-              return user.payload.doc.id;
-            })
-          )
-        )
-        .subscribe((id) => {
-          this.firestore
-            .doc(`users/${id}`)
-            .update({ postcode: this.postcode.value });
-        });
-    }
+  isSearchInProgress() {
+    this.subscriptions.add(this.firestore
+      .collection('jobs', (ref) =>
+        ref
+          .where('userId', '==', `${this.authenticationService.getUserId()}`)
+          .where('state', '==', 'Scheduled')
+          .where('store', '==', 'ASDA')
+      )
+      .get()
+      .subscribe((res) => {
+        if (!res.empty) {
+          this.searchInProgress = true;
+        }
+      }));
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 }
