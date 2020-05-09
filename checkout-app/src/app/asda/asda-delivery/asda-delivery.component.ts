@@ -63,7 +63,7 @@ export class AsdaDeliveryComponent implements OnInit, OnDestroy {
       .collection('jobs', (ref) =>
         ref
           .where('userId', '==', `${this.authenticationService.getUserId()}`)
-          .where('state', '==', 'Scheduled')
+          .where('state', 'in', ['Scheduled', 'Active'])
           .where('store', '==', 'ASDA')
       )
       .get()
