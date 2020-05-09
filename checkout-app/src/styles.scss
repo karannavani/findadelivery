@@ -22,7 +22,7 @@ button {
   }
 }
 
-.btn-primary {
+.btn-primary, .btn-primary:disabled {
   background-color: #553ed8;
   border-color: #553ed8;
   &:hover {
