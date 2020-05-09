@@ -1,7 +1,7 @@
 <div class="container">
   <div class="col-12 col-lg-6 col-md-7">
     <div class="form-group">
-      <label for="postcode">Your Postcode</label>
+      <label for="postcode">Enter your postcode</label>
       <small id="passwordHelpInline" class="text-muted">
         e.g. SW1A 1AA
       </small>
@@ -10,5 +10,23 @@
     <button type="button" class="btn btn-primary" (click)="scheduleJob('ASDA')">
       Email me when a slot is found
     </button>
+    <div *ngIf="searchInProgress" class="alert alert-secondary" role="alert">
+      <h6 class="alert-heading"><strong>We're searching</strong></h6>
+      <p>
+        You will receive an email as soon as we find a slot. You can leave this
+        page now.
+      </p>
+      <img
+        src="../../../assets/fogg-searching-2.png"
+        class="img-fluid d-block mx-auto"
+        style="width: 300px;"
+        alt="Sherlock Holmes search with dog in London"
+      />
+      <cite class="d-block mt-2 text-center"
+        ><a href="https://icons8.com/ouch/illustration/fogg-searching-2"
+          >Illustration by Marina Fedoseenko</a
+        ></cite
+      >
+    </div>
   </div>
 </div>

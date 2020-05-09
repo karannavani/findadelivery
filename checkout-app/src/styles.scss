@@ -9,6 +9,19 @@ button {
   border-radius: 15px;
 }
 
+.alert {
+  margin-top: 1rem;
+  border: none;
+
+  cite {
+    font-size: 0.6rem;
+
+    a {
+      color: #553ed8;
+    }
+  }
+}
+
 .btn-primary {
   background-color: #553ed8;
   border-color: #553ed8;
