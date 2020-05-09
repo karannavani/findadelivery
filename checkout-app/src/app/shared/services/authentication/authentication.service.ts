@@ -3,6 +3,7 @@ import { AngularFireAuth } from '@angular/fire/auth';
 import { auth } from 'firebase';
 import { Observable, Subscription } from 'rxjs';
 import { Router } from '@angular/router';
+import { AngularFirestore } from '@angular/fire/firestore';
 
 @Injectable({
   providedIn: 'root',
@@ -12,6 +13,7 @@ export class AuthenticationService {
 
   constructor(
     public afAuth: AngularFireAuth, // Inject Firebase auth service
+    private firestore: AngularFirestore,
     public router: Router
   ) {
     this.afAuth.onAuthStateChanged((user) => {
@@ -40,8 +42,9 @@ export class AuthenticationService {
           .signInWithPopup(provider)
           .then((result) => {
             console.log('You have been successfully logged in!', result);
+            this.userDetails = result.user;
+            this.checkIfUserExists(this.userDetails.uid);
             this.router.navigate(['home']);
-            this.getUserDetails();
           })
           .catch((error) => {
             console.log(error);
@@ -53,12 +56,6 @@ export class AuthenticationService {
         const errorMessage = error.message;
         console.log('Error', errorCode, errorMessage);
       });
-  }
-
-  getUserDetails() {
-    this.afAuth.user.subscribe((res) => {
-      this.userDetails = res;
-    });
   }
 
   getUserId() {
@@ -73,5 +70,19 @@ export class AuthenticationService {
     this.afAuth.signOut().then(() => {
       this.router.navigate(['login']);
     });
+  }
+
+  checkIfUserExists(id: string) {
+    this.firestore
+      .doc(`users/${id}`)
+      .get()
+      .subscribe((res) => {
+        if (!res.exists) {
+          this.firestore.collection('users').doc(id).set({
+            userId: this.getUserId(),
+            displayName: this.userDetails.displayName,
+          });
+        }
+      });
   }
 }

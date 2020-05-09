@@ -9,7 +9,7 @@ const taskRunner = functions
   .runWith({ memory: "2GB" })
   .pubsub.schedule("* * * * *")
   .onRun(async (context) => {
-    checkScheduled();
+    // checkScheduled();
     checkPerformAt();
   });
 
@@ -62,6 +62,8 @@ const checkScheduled = async () => {
   return await Promise.all(jobs);
 };
 
+const onJobScheduled = functions.firestore.document
+
 const workers = {
   asdaDeliveryScan: (postcode) => {
     console.log("hit asda worker");
@@ -74,4 +76,5 @@ module.exports = {
   checkPerformAt,
   checkScheduled,
   AsdaDelivery,
+  onJobScheduled
 };
