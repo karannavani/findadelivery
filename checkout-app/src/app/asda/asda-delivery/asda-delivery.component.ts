@@ -59,10 +59,11 @@ export class AsdaDeliveryComponent implements OnInit, OnDestroy {
   }
 
   isSearchInProgress() {
+    const userRef = this.firestore.collection('users').doc(this.authenticationService.getUserId()).ref;
     this.subscriptions.add(this.firestore
       .collection('jobs', (ref) =>
         ref
-          .where('userId', '==', `${this.authenticationService.getUserId()}`)
+          .where('user', '==', userRef)
           .where('state', 'in', ['Scheduled', 'Active'])
           .where('store', '==', 'ASDA')
       )
