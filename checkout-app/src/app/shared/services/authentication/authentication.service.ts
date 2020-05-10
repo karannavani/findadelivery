@@ -81,6 +81,7 @@ export class AuthenticationService {
           this.firestore.collection('users').doc(id).set({
             userId: this.getUserId(),
             displayName: this.userDetails.displayName,
+            email: this.userDetails.email
           });
         }
       });

@@ -21,8 +21,6 @@ export class AuthGuard implements CanActivate {
 
   canActivate(
   ): Observable<boolean> | Promise<boolean> | boolean {
-    console.log('login required');
-
     return this.authenticationService.afAuth.authState.pipe(
       take(1),
       map((user) => {
