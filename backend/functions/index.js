@@ -85,7 +85,7 @@ const updatePerformAt = async (snapshot) => {
   const now = admin.firestore.Timestamp.now().toDate();
   now.setTime(now.getTime() + 5 * 60 * 1000);
   const performAt = admin.firestore.Timestamp.fromDate(now);
-  db.doc(`jobs/${snapshot.id}`).update({ performAt, state: "Active" });
+  return db.doc(`jobs/${snapshot.id}`).update({ performAt, state: "Active" });
 };
 
 module.exports = {
