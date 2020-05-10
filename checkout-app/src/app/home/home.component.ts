@@ -15,7 +15,6 @@ export class HomeComponent implements OnInit {
 
   scheduleJob(store) {
    this.schedulingService.createJob(store);
-   console.log('created job');
   }
 
 }
