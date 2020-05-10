@@ -22,10 +22,13 @@ button {
   }
 }
 
-.btn-primary, .btn-primary:disabled {
+.btn-primary,
+.btn-primary:disabled {
   background-color: #553ed8;
   border-color: #553ed8;
-  &:hover, &:focus, &:active {
+  &:hover,
+  &:focus,
+  &:active {
     background-color: #2913a5 !important;
     border-color: #2913a5 !important;
   }
@@ -47,7 +50,8 @@ button {
   .nav-link {
     color: rgba($color: #e4e4e4, $alpha: 0.9);
     font-size: 1rem;
-    &:hover, .active {
+    &:hover,
+    .active {
       color: rgba($color: #fff, $alpha: 1) !important;
     }
   }
@@ -60,6 +64,8 @@ button {
 .supermarket-card {
   margin: 3rem 0;
   padding: 1.5rem;
+  min-height: 80px;
+
   border: none;
   -webkit-box-shadow: -2px 14px 103px -4px rgba(0, 0, 0, 0.2);
   -moz-box-shadow: -2px 14px 103px -4px rgba(0, 0, 0, 0.2);
@@ -71,9 +77,8 @@ button {
   }
 }
 
-
 #asdaWrapper {
-  background-image: url('./assets/supermarkets/Asda_logo.svg.png');
+  background-image: url("./assets/supermarkets/Asda_logo.svg.png");
   background-position: center;
   background-size: contain;
   background-repeat: no-repeat;
