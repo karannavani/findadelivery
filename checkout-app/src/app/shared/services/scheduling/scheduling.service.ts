@@ -16,8 +16,10 @@ export class SchedulingService {
   createJob(store, options?: object) {
     const created = new Date().toISOString();
     const user = this.firestore.collection('users').doc(this.authenticationService.getUserId()).ref;
+    const userId = this.authenticationService.getUserId();
     const data = {
       user,
+      userId,
       created,
       store,
       type: 'Delivery',
