@@ -1,12 +1,27 @@
 const axios = require("axios");
 const sgMail = require("@sendgrid/mail");
 const functions = require("firebase-functions");
+const admin = require("firebase-admin");
+const serviceAccount = require("../checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json");
+const db = admin
+  .initializeApp(
+    {
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: "https://checkout-app-uk.firebaseio.com",
+    },
+    "Asda Delivery"
+  )
+  .firestore();
+// const db = admin.firestore();
 
 sgMail.setApiKey(functions.config().sendgrid.api_key);
 
 class AsdaDelivery {
-  constructor(postcode) {
+  constructor(postcode, email, docId) {
     this.postcode = postcode;
+    this.email = email;
+    this.docId = docId;
+    this.availabilityVerified = false;
     this.checkAsda(postcode);
   }
   checkAsda(postcode) {
@@ -41,14 +56,64 @@ class AsdaDelivery {
       })
       .then((res) => {
         console.log(`statusCode: ${res.status_code}`);
-        // getSlots(res.data.data);
+        this.getSlots(res.data.data);
       })
       .catch((error) => {
         console.error(error);
       });
   }
+
+  getSlots(data) {
+    if (data.slot_days) {
+      console.log("get slots called");
+      data.slot_days.forEach((day) => {
+        day.slots.forEach((slot) => {
+          if (
+            slot.slot_info.status !== "UNAVAILABLE" &&
+            !this.availabilityVerified
+          ) {
+            console.log(slot.slot_info.status);
+            const startTime = new Date(slot.slot_info.start_time);
+            const endTime = new Date(slot.slot_info.end_time);
+            this.availabilityVerified = true;
+            this.sendEmail(startTime, endTime);
+            db.doc(`jobs/${this.docId}`)
+              .update({
+                state: "Completed",
+              })
+              .then(() => {
+                // there is a slot open on date:
+                console.log("date", `${startTime.toDateString()}`);
+                console.log(
+                  "start time",
+                  `${startTime.getUTCHours()}:${startTime.getUTCMinutes()}0`
+                );
+                console.log(
+                  "start time",
+                  `${endTime.getUTCHours()}:${endTime.getUTCMinutes()}0`
+                );
+              });
+          }
+        });
+      });
+    }
+  }
+
+  sendEmail(startTime, endTime) {
+    const msg = {
+      to: this.email,
+      from: "noreply@findadelivery.com",
+      subject: "ASDA DELIVERY SLOT AVAILABLE",
+      text: `A delivery slot has become available for ${startTime.toDateString()}, ${startTime.getUTCHours()}:${startTime.getUTCMinutes()}0 - ${endTime.getUTCHours()}:${endTime.getUTCMinutes()}0
+    
+    Book your slot - https://groceries.asda.com/checkout/book-slot?tab=deliver&origin=/`,
+    };
+
+    console.log("sending email");
+    sgMail.send(msg);
+  }
 }
 
 module.exports = {
-  AsdaDelivery
-}
+  AsdaDelivery,
+};
