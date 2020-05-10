@@ -67,10 +67,11 @@ button {
   min-height: 80px;
 
   border: none;
+  -webkit-appearance: none;
   -webkit-box-shadow: -2px 14px 103px -4px rgba(0, 0, 0, 0.2);
   -moz-box-shadow: -2px 14px 103px -4px rgba(0, 0, 0, 0.2);
   box-shadow: -2px 14px 103px -4px rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
+  border-radius: 0.8rem;
   transition: transform 0.2s;
   &:hover {
     transform: scale(1.03);
