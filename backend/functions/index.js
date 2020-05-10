@@ -61,14 +61,14 @@ const onJobActive = functions
       snapshot.after.data().state === "Active" &&
       snapshot.after.data().performAt === "Now"
     ) {
-      const { worker, postcode } = snapshot.data();
+      const { worker, postcode } = snapshot.after.data();
       snapshot.after
         .data()
         .user.get()
         .then(async (user) => {
           const email = user.data().email;
           await updatePerformAt(snapshot.after).then(async () => {
-            return await workers[worker](postcode, email, snapshot.id);
+            return await workers[worker](postcode, email, snapshot.after.id);
           });
         });
     }
