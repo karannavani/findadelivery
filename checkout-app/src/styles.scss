@@ -26,8 +26,8 @@ button {
   background-color: #553ed8;
   border-color: #553ed8;
   &:hover, &:focus, &:active {
-    background-color: #2913a5;
-    border-color: #2913a5;
+    background-color: #2913a5 !important;
+    border-color: #2913a5 !important;
   }
 }
 

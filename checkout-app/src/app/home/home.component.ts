@@ -18,8 +18,4 @@ export class HomeComponent implements OnInit {
    console.log('created job');
   }
 
-  // isUserLoggedIn() {
-  //   return this.authenticationService.getUserDetails();
-  // }
-
 }
