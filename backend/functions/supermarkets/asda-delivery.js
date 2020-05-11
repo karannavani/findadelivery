@@ -63,7 +63,7 @@ class AsdaDelivery {
       });
   }
 
-  getSlots(data) {
+  async getSlots(data) {
     if (data.slot_days) {
       console.log("get slots called");
       data.slot_days.forEach((day) => {
@@ -76,8 +76,8 @@ class AsdaDelivery {
             const startTime = new Date(slot.slot_info.start_time);
             const endTime = new Date(slot.slot_info.end_time);
             this.availabilityVerified = true;
-            this.sendEmail(startTime, endTime);
-            db.doc(`jobs/${this.docId}`)
+            this.sendEmail(startTime, endTime).then(async () => {
+            return db.doc(`jobs/${this.docId}`)
               .update({
                 state: "Completed",
               })
@@ -93,6 +93,7 @@ class AsdaDelivery {
                   `${endTime.getUTCHours()}:${endTime.getUTCMinutes()}0`
                 );
               });
+            })
           }
         });
       });
@@ -110,7 +111,7 @@ class AsdaDelivery {
     };
 
     console.log("sending email");
-    sgMail.send(msg);
+    return sgMail.send(msg);
   }
 }
 
