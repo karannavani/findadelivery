@@ -22,7 +22,6 @@ const insertDynamicContent = (origContent, timeSlot) => {
 
   console.log('newContent is:', newContent);
   
-  return true; // TODO: Delete line
   return newContent;
 };
 
@@ -38,7 +37,7 @@ const constructMessage = (vendor, timeSlot) => {
   return (timeSlot ? insertDynamicContent(contentMappings[vendor], details) : contentMappings[vendor]);
 };
 
-const sendEmail = (vendor, addresses = [], timeSlot) => {
+const sendEmail = ({ vendor, timeSlot, addresses = [] }) => {
   const primaryAddress = process.env.PERSONAL_EMAIL;
   const sender = 'checkoutapp@example.com'; 
   const subject = "Find a Delivery - We've found a slot!";
