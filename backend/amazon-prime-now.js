@@ -2,24 +2,11 @@ const cron = require("node-cron");
 const express = require("express");
 const axios = require("axios");
 const cheerio = require("cheerio");
-const sgMail = require("@sendgrid/mail");
+const sendEmail = require('./utils/send-email');
 
 const merchantId = "A3L2WCBX4NBSPG"; //needs to be checked and changed every time there is a new cart
-// const merchantId = "A3L2WCBX4NBSPG"; // leaving this here since it always returns true and is useful for testing
-const ref = "pn_sc_ptc_bwr";
-const url = `https://primenow.amazon.co.uk/checkout/enter-checkout?merchantId=${merchantId}&ref=${ref}`;
 
 app = express();
-
-// using Twilio SendGrid's v3 Node.js Library
-// https://github.com/sendgrid/sendgrid-nodejs
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-const msg = {
-  to: process.env.PERSONAL_EMAIL,
-  from: "checkoutapp@example.com",
-  subject: "AMAZON PRIME DELIVERY SLOT AVAILABLE",
-  text: `Go to checkout - ${url}`,
-};
 
 const slotAvailabilityArray = [];
 let verificationArray = [];
@@ -58,10 +45,6 @@ const checkForAvailability = (deliverySlot) => {
     : compareToPrevious(true);
 };
 
-const sendEmail = () => {
-  sgMail.send(msg);
-};
-
 const compareToPrevious = (boolean) => {
   if (checkFalseAlarm) {
     console.log("verifying to prev");
@@ -80,7 +63,7 @@ const compareToPrevious = (boolean) => {
 };
 
 // starts a sub cron to check whether the slot is actually open for long enough to act on it or if it's just a 1 sec blip
-const verifyIfFalseAlarm = () => {
+const verifyIfFalseAlarm = async () => {
   console.log("verification array looks like", verificationArray);
   if (verificationArray.length <= 5) {
     verificationArray.filter((availability) => {
@@ -101,8 +84,13 @@ const verifyIfFalseAlarm = () => {
       }
     });
     if (availabilityVerified) {
-      console.log("sending email");
-      sendEmail();
+      // TODO: We should create a logger for debugging.
+      console.log("Sending email...");
+      const payload = {
+        vendor: 'AMAZON', // TODO: Make these constants in the future
+        details: { merchantId }
+      }; 
+      await sendEmail(payload);
     }
   }
 };

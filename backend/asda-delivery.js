@@ -1,5 +1,5 @@
 const axios = require("axios");
-const sgMail = require("@sendgrid/mail");
+const sendEmail = require('./utils/send-email');
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -44,7 +44,7 @@ const checkAsda = (postcode) => {
     });
 };
 
-const getSlots = (data) => {
+const getSlots = async (data) => {
   if (data.slot_days) {
     // console.log(data.slot_days);
     data.slot_days.forEach((day) => {
@@ -54,7 +54,11 @@ const getSlots = (data) => {
           const startTime = new Date(slot.slot_info.start_time);
           const endTime = new Date(slot.slot_info.end_time);
           availabilityVerified = true;
-          sendEmail(startTime, endTime);
+
+          console.log('Sending email...');
+          await sendEmail({ vendor: 'ASDA', details: { timeSlot: [startTime, endTime] } });
+
+          // TODO: Yeah, we really need a logger for debugging.............
           // there is a slot open on date:
           console.log("date", `${startTime.toDateString()}`);
           console.log(
@@ -69,20 +73,6 @@ const getSlots = (data) => {
       });
     });
   }
-};
-
-const sendEmail = (startTime, endTime) => {
-  const msg = {
-    to: process.env.PERSONAL_EMAIL,
-    from: "findadelivery@example.com",
-    subject: "ASDA DELIVERY SLOT AVAILABLE",
-    text: `A delivery slot has become available for ${startTime.toDateString()}, ${startTime.getUTCHours()}:${startTime.getUTCMinutes()}0 - ${endTime.getUTCHours()}:${endTime.getUTCMinutes()}0
-    
-    Book your slot - https://groceries.asda.com/checkout/book-slot?tab=deliver&origin=/`,
-  };
-
-  console.log('sending email');
-  // sgMail.send(msg);
 };
 
 const asdaAvailabilityStatus = () => {
