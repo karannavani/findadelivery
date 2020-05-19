@@ -26,7 +26,6 @@ const insertTimeSlot = (origContent, timeSlot) => {
 
   if (invalidFormat) throw { statusCode: 400, message: "Invalid timeSlot" };
 
-  // TODO: This could be extracted into a separate function(?)
   const slotDate = `${format(timeSlot[0], 'PPPP')}`;
   const startTime = `${format(timeSlot[0], 'kk:mm')}`;
   const endTime = `${format(timeSlot[1], 'kk:mm')}`;
@@ -42,7 +41,8 @@ const insertTimeSlot = (origContent, timeSlot) => {
 
 const insertDetails = (origContent, details) => {
   // I'm sure there's a better way to do this but we can properly optimise
-  // later.
+  // later. One problem with this approach is that each option is mutually
+  // exclusive (which may not be a huge problem).
   if (details.timeSlot) return insertTimeSlot(origContent, details.timeSlot); // For Asda
   if (details.merchantId) return insertMerchantId(origContent, details.merchantId); // For Amazon Prime
 };
@@ -62,6 +62,7 @@ const constructMessage = (vendor, details) => {
 
 const sendEmail = async ({ vendor, details, addresses = [] }) => {
   try {
+    // Let's quit immediately if we can't find an API key
     if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     else throw { statusCode: 400, message: 'No API key found.' };
 
@@ -91,3 +92,6 @@ const sendEmail = async ({ vendor, details, addresses = [] }) => {
 };
 
 module.exports = sendEmail;
+
+// This is for (sub-optimal) testing.
+// sendEmail({ vendor: 'AMAZON', details: { merchantId: 'A3L2WCBX4NBSPG' }});
