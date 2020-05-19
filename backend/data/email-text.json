@@ -1,0 +1,16 @@
+{
+  "ASDA": {
+    "subject": "Find a Delivery - We've found a delivery slot at Asda!",
+    "body": {
+      "1": "An Asda home delivery slot has just become available ",
+      "2": "You can find it at https:groceries.asda.com/checkout/book-slot?tab=deliver&origin=/"
+    }
+  },
+
+  "AMAZON": {
+    "subject": "Find a Delivery - We've found an Amazon Prime delivery slot!",
+    "body": {
+      "1": "An Amazon Prime delivery slot has just become available and you can head straight to the checkout by following this link:"
+    }
+  }
+}
