@@ -1,10 +1,22 @@
+const util = require('util');
 // Set-up Twilio SendGrid (https://github.com/sendgrid/sendgrid-nodejs)
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-const insertDynamicContent = (origContent, timeSlot) => {
+const insertTimeSlot = (origContent, timeSlot) => {
   // This whole thing could be much more sophisticated and robust but it
   // should do for now, though it will modify the current email format slightly.
+
+  let invalidFormat = false;
+  timeSlot.forEach((e) => {
+    if (Object.prototype.toString.call(e) !== '[object Date]') {
+      invalidFormat = true;
+    };
+  });
+
+  console.log('invalidFormat is:', invalidFormat);
+
+  if (invalidFormat) throw { statusCode: 400, message: "Invalid timeSlot" };
 
   // TODO: This could be extracted into a separate function(?)
   const slotDate = timeSlot[0].toDateString();
@@ -32,23 +44,31 @@ const constructMessage = (vendor, timeSlot) => {
 
   const contentMappings = require('../data/email-text.json');
   const vendors = Object.keys(contentMappings);
-  if (!vendor || !vendors.includes(vendor)) return false;
+  if (!vendor || !vendors.includes(vendor)) throw { statusCode: 400, message: 'No valid vendor found.' };
 
-  return (timeSlot ? insertDynamicContent(contentMappings[vendor], details) : contentMappings[vendor]);
+  return (timeSlot ? insertTimeSlot(contentMappings[vendor], timeSlot) : contentMappings[vendor]);
 };
 
 const sendEmail = ({ vendor, timeSlot, addresses = [] }) => {
-  const primaryAddress = process.env.PERSONAL_EMAIL;
-  const sender = 'checkoutapp@example.com'; 
-  const subject = "Find a Delivery - We've found a slot!";
+  try {
 
-  if (primaryAddress) addresses.push(primaryAddress);
-  if (!addresses || !primaryAddress && addresses.length === 0) return { statusCode: 400, message: 'No addresses(s) found.' };
+    const primaryAddress = process.env.PERSONAL_EMAIL;
+    const sender = 'checkoutapp@example.com'; 
+    const subject = "Find a Delivery - We've found a slot!";
 
-  const text = constructMessage(vendor);
-  if (!text) return { statusCode: 400, message: 'No valid vendor found.' };
+    if (primaryAddress) addresses.push(primaryAddress);
+    if (!addresses || !primaryAddress && addresses.length === 0) throw { statusCode: 400, message: 'No addresses(s) found.' };
 
-  return { statusCode: 200 };
+    console.log('====> timeSlot is:', timeSlot);
+
+    const text = constructMessage(vendor, timeSlot);
+    console.log('text is:', text);
+
+    return { statusCode: 200 };
+  } catch (error) {
+    // console.log('Error is:', JSON.stringify(error));
+    return error;
+  }
 };
 
 module.exports = sendEmail;

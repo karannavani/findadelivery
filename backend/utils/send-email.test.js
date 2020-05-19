@@ -26,12 +26,12 @@ describe('sendEmail()', () => {
 
     describe('slotTime exists', () => {
       test('Returns a 400 Bad Request if an invalid slotTime is passed', async () => {
-        const slotTime = ['startDate', 'endDate'];
+        const timeSlot = ['startDate', 'endDate']; // This time slot is invalid because it contains strings, not Date objs
         const vendor = 'ASDA';
 
-        const response = await sendEmail({ vendor, slotTime });
+        const response = await sendEmail({ vendor, timeSlot });
 
-        expect(response.statusCode).toBe(100);
+        expect(response.statusCode).toBe(400);
       });
     });
   });
