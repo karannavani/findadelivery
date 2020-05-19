@@ -1,14 +1,25 @@
-const addMinutes = require('date-fns/addMinutes');
 const sendEmail = require('./send-email');
+const sgMail = require('@sendgrid/mail'); // Twilio SendGrid (https://github.com/sendgrid/sendgrid-nodejs)
+const addMinutes = require('date-fns/addMinutes');
 const defaultEnv = process.env;
 
+jest.mock('@sendgrid/mail');
+
 describe('sendEmail()', () => {
-  // TODO: Add tests to check for existence of SendGrid API key
+  describe('process.env.SENDGRID_API_KEY does not exist', () => {
+    test('Returns a 400 Bad Request if process.env.SENDGRID_API_KEY does not exist', async () => {
+      const response = await sendEmail({});
+      expect(response.statusCode).toBe(400);
+    });
+  });
 
   describe('process.env.PERSONAL_EMAIL = "kane@test.com"', () => {
     beforeEach(() => {
       jest.resetModules();
-      process.env = { ...defaultEnv, PERSONAL_EMAIL: 'kane@test.com' };
+      process.env = {
+        ...defaultEnv,
+        PERSONAL_EMAIL: 'kane@test.com',
+        SENDGRID_API_KEY: 'test-api-key'};
     });
 
     afterEach(() => {
@@ -79,6 +90,17 @@ describe('sendEmail()', () => {
 
 
   describe('process.env.PERSONAL_EMAIL is undefined', () => {
+    beforeEach(() => {
+      jest.resetModules();
+      process.env = {
+        ...defaultEnv,
+        SENDGRID_API_KEY: 'test-api-key'};
+    });
+
+    afterEach(() => {
+      process.env = defaultEnv;
+    });
+
     test('Returns a 400 Bad Request if no email address is found', async () => {
       const response = await sendEmail({ vendor: 'ASDA' });
       expect(response.statusCode).toBe(400);

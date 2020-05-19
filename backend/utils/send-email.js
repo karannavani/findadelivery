@@ -1,8 +1,6 @@
+const sgMail = require('@sendgrid/mail'); // Twilio SendGrid (https://github.com/sendgrid/sendgrid-nodejs)
 const format = require('date-fns/format');
 const util = require('util');
-// Set-up Twilio SendGrid (https://github.com/sendgrid/sendgrid-nodejs)
-const sgMail = require('@sendgrid/mail');
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const insertMerchantId = (origContent, merchantId) => {
   // const merchantId = "A3L2WCBX4NBSPG"; // This always returns true and is useful for testing
@@ -62,8 +60,10 @@ const constructMessage = (vendor, details) => {
   return (details ? insertDetails(contentMappings[vendor], details) : contentMappings[vendor]);
 };
 
-const sendEmail = ({ vendor, details, addresses = [] }) => {
+const sendEmail = async ({ vendor, details, addresses = [] }) => {
   try {
+    if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    else throw { statusCode: 400, message: 'No API key found.' };
 
     const primaryAddress = process.env.PERSONAL_EMAIL;
     const sender = 'checkoutapp@example.com'; 
@@ -73,13 +73,18 @@ const sendEmail = ({ vendor, details, addresses = [] }) => {
     if (!addresses || !primaryAddress && addresses.length === 0) throw { statusCode: 400, message: 'No addresses(s) found.' };
 
     const text = constructMessage(vendor, details);
-    console.log('text is:', text);
+    const message = {
+      to: addresses,
+      from: sender,
+      subject: text.subject,
+      text: text.body
+    };
 
-    // Send email via Twilio
-
+    await sgMail.send(message);
     return { statusCode: 200 };
   } catch (error) {
-    // console.log('Error is:', JSON.stringify(error));
+    // TODO: Find a way of handling unexpected errors.
+    console.log('Error is:', JSON.stringify(error.message));
     return error;
   }
 };
