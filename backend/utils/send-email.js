@@ -1,3 +1,4 @@
+const format = require('date-fns/format');
 const util = require('util');
 // Set-up Twilio SendGrid (https://github.com/sendgrid/sendgrid-nodejs)
 const sgMail = require('@sendgrid/mail');
@@ -19,20 +20,17 @@ const insertTimeSlot = (origContent, timeSlot) => {
   if (invalidFormat) throw { statusCode: 400, message: "Invalid timeSlot" };
 
   // TODO: This could be extracted into a separate function(?)
-  const slotDate = timeSlot[0].toDateString();
-  const startTime = `${timeSlot[0].getUTCHours()}:${timeSlot[0].getUTCMinutes()}`;
-  const endTime = `${timeSlot[1].getUTCHours()}:${timeSlot[1].getUTCMinutes()}`;
+  const slotDate = `${format(timeSlot[0], 'PPPP')}`;
+  const startTime = `${format(timeSlot[0], 'kk:mm')}`;
+  const endTime = `${format(timeSlot[1], 'kk:mm')}`;
 
   console.log('origContent is:', origContent);
-  console.log('timeSlot is:', timeSlot);
   
   const contentToInsert = `on ${slotDate} at ${startTime}-${endTime}. `;
   const newContent = {
     subject: origContent.subject,
     body: origContent.body[1] + contentToInsert + origContent.body[2]
   };
-
-  console.log('newContent is:', newContent);
   
   return newContent;
 };
