@@ -1,8 +1,8 @@
 const axios = require("axios");
-const sgMail = require("@sendgrid/mail");
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const serviceAccount = require("../checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json");
+const sendEmail = require('./utils/send-email');
 const db = admin
   .initializeApp(
     {
@@ -13,8 +13,6 @@ const db = admin
   )
   .firestore();
 // const db = admin.firestore();
-
-sgMail.setApiKey(functions.config().sendgrid.api_key);
 
 class AsdaDelivery {
   constructor(postcode, email, docId) {
@@ -76,12 +74,21 @@ class AsdaDelivery {
             const startTime = new Date(slot.slot_info.start_time);
             const endTime = new Date(slot.slot_info.end_time);
             this.availabilityVerified = true;
-            this.sendEmail(startTime, endTime).then(async () => {
+
+            const payload = {
+              vendor: 'ASDA',
+              details: {
+                timeSlot: [startTime, endTime]
+              }
+            };
+            this.sendEmail(payload).then(async () => {
+
             return db.doc(`jobs/${this.docId}`)
               .update({
                 state: "Completed",
               })
               .then(() => {
+                // TODO: Fix this logging.
                 // there is a slot open on date:
                 console.log("date", `${startTime.toDateString()}`);
                 console.log(
@@ -98,20 +105,6 @@ class AsdaDelivery {
         });
       });
     }
-  }
-
-  sendEmail(startTime, endTime) {
-    const msg = {
-      to: this.email,
-      from: "noreply@findadelivery.com",
-      subject: "ASDA DELIVERY SLOT AVAILABLE",
-      text: `A delivery slot has become available for ${startTime.toDateString()}, ${startTime.getUTCHours()}:${startTime.getUTCMinutes()}0 - ${endTime.getUTCHours()}:${endTime.getUTCMinutes()}0
-    
-    Book your slot - https://groceries.asda.com/checkout/book-slot?tab=deliver&origin=/`,
-    };
-
-    console.log("sending email");
-    return sgMail.send(msg);
   }
 }
 

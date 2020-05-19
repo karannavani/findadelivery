@@ -62,12 +62,16 @@ const constructMessage = (vendor, details) => {
 
 const sendEmail = async ({ vendor, details, addresses = [] }) => {
   try {
-    // Let's quit immediately if we can't find an API key
-    if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-    else throw { statusCode: 400, message: 'No API key found.' };
+    // TODO: Let's quit immediately if we can't find a valid API key. It's fine for
+    // now but is a good check to have in place.
+    // if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    // else throw { statusCode: 400, message: 'No API key found.' };
+    
+    // sgMail.setApiKey(process.env.SENDGRID_API_KEY); // Un-comment this line when testing locally.
+    sgMail.setApiKey(functions.config().sendgrid.api_key); // Comment this line when testing locally.
 
     const primaryAddress = process.env.PERSONAL_EMAIL;
-    const sender = 'checkoutapp@example.com'; 
+    const sender = 'noreply@findadelivery.com'; 
     const subject = "Find a Delivery - We've found a slot!";
 
     if (primaryAddress) addresses.push(primaryAddress);
