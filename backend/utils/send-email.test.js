@@ -21,38 +21,58 @@ describe('sendEmail()', () => {
     });
 
     test('Returns a 200 OK if vendor is passed', async () => {
-      const response = await sendEmail({ vendor: 'ASDA' });
+      const response = await sendEmail({ vendor: 'AMAZON' });
       expect(response.statusCode).toBe(200);
     });
 
-    describe('timeSlot exists', () => {
-      test('Returns a 400 Bad Request if an invalid timeSlot is passed', async () => {
-        const timeSlot = ['startDate', 'endDate']; // This time slot is invalid because it contains strings, not Date objs
-        const vendor = 'ASDA';
+    describe('details exists', () => {
+      describe('timeSlot exists', () => {
+        test('Returns a 400 Bad Request if an invalid timeSlot is passed', async () => {
+          const vendor = 'ASDA';
+          const details = {
+            timeSlot: ['startDate', 'endDate'] // This time slot is invalid because it contains strings, not Date objs
+          }; 
 
-        const response = await sendEmail({ vendor, timeSlot });
+          const response = await sendEmail({ vendor, details });
 
-        expect(response.statusCode).toBe(400);
+          expect(response.statusCode).toBe(400);
+        });
+
+        test('Returns a 400 Bad Request if an invalid timeSlot is passed', async () => {
+          const vendor = 'ASDA';
+          const details = {
+            timeSlot:['startDate', new Date()]
+          };
+
+          const response = await sendEmail({ vendor, details });
+
+          expect(response.statusCode).toBe(400);
+        });
+
+        test('Returns a 200 OK if a valid timeSlot is passed', async () => {
+          const vendor = 'ASDA';
+          const startDate = new Date();
+          const endDate = addMinutes(startDate, 30);
+          const details = {
+            timeSlot: [startDate, endDate]
+          };
+
+          const response = await sendEmail({ vendor, details });
+
+          expect(response.statusCode).toBe(200);
+        });
       });
 
-      test('Returns a 400 Bad Request if an invalid timeSlot is passed', async () => {
-        const timeSlot = ['startDate', new Date()];
-        const vendor = 'ASDA';
+      describe('merchantId exists', () => {
+        test('Returns a 200 OK if vendor and merchantId is passed', async () => {
+          const vendor = 'AMAZON';
+          const details = {
+            merchantId: "A3L2WCBX4NBSPG" 
+          }
+          const response = await sendEmail({ vendor, details });
+          expect(response.statusCode).toBe(200);
+        });
 
-        const response = await sendEmail({ vendor, timeSlot });
-
-        expect(response.statusCode).toBe(400);
-      });
-
-      test('Returns a 200 OK if a valid timeSlot is passed', async () => {
-        const startDate = new Date();
-        const endDate = addMinutes(startDate, 30);
-        const timeSlot = [startDate, endDate];
-        const vendor = 'ASDA';
-
-        const response = await sendEmail({ vendor, timeSlot });
-
-        expect(response.statusCode).toBe(400);
       });
     });
   });

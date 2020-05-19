@@ -4,6 +4,17 @@ const util = require('util');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+const insertMerchantId = (origContent, merchantId) => {
+  // const merchantId = "A3L2WCBX4NBSPG"; // This always returns true and is useful for testing
+  const url = `https://primenow.amazon.co.uk/checkout/enter-checkout?merchantId=${merchantId}&ref=pn_sc_ptc_bwr`;
+  const newContent = {
+    subject: origContent.subject,
+    body: origContent.body[1] + ' ' + url
+  };
+
+  return newContent;
+};
+
 const insertTimeSlot = (origContent, timeSlot) => {
   // This whole thing could be much more sophisticated and robust but it
   // should do for now, though it will modify the current email format slightly.
@@ -15,16 +26,12 @@ const insertTimeSlot = (origContent, timeSlot) => {
     };
   });
 
-  console.log('invalidFormat is:', invalidFormat);
-
   if (invalidFormat) throw { statusCode: 400, message: "Invalid timeSlot" };
 
   // TODO: This could be extracted into a separate function(?)
   const slotDate = `${format(timeSlot[0], 'PPPP')}`;
   const startTime = `${format(timeSlot[0], 'kk:mm')}`;
   const endTime = `${format(timeSlot[1], 'kk:mm')}`;
-
-  console.log('origContent is:', origContent);
   
   const contentToInsert = `on ${slotDate} at ${startTime}-${endTime}. `;
   const newContent = {
@@ -35,7 +42,14 @@ const insertTimeSlot = (origContent, timeSlot) => {
   return newContent;
 };
 
-const constructMessage = (vendor, timeSlot) => {
+const insertDetails = (origContent, details) => {
+  // I'm sure there's a better way to do this but we can properly optimise
+  // later.
+  if (details.timeSlot) return insertTimeSlot(origContent, details.timeSlot); // For Asda
+  if (details.merchantId) return insertMerchantId(origContent, details.merchantId); // For Amazon Prime
+};
+
+const constructMessage = (vendor, details) => {
   // This will probably become far more complex when you/we start dispatching
   // high-quality HTML emails but for now only exists to return the relevant
   // text for each vendor.
@@ -44,10 +58,11 @@ const constructMessage = (vendor, timeSlot) => {
   const vendors = Object.keys(contentMappings);
   if (!vendor || !vendors.includes(vendor)) throw { statusCode: 400, message: 'No valid vendor found.' };
 
-  return (timeSlot ? insertTimeSlot(contentMappings[vendor], timeSlot) : contentMappings[vendor]);
+  // TODO: We should probably check if details is an empty object here...
+  return (details ? insertDetails(contentMappings[vendor], details) : contentMappings[vendor]);
 };
 
-const sendEmail = ({ vendor, timeSlot, addresses = [] }) => {
+const sendEmail = ({ vendor, details, addresses = [] }) => {
   try {
 
     const primaryAddress = process.env.PERSONAL_EMAIL;
@@ -57,10 +72,10 @@ const sendEmail = ({ vendor, timeSlot, addresses = [] }) => {
     if (primaryAddress) addresses.push(primaryAddress);
     if (!addresses || !primaryAddress && addresses.length === 0) throw { statusCode: 400, message: 'No addresses(s) found.' };
 
-    console.log('====> timeSlot is:', timeSlot);
-
-    const text = constructMessage(vendor, timeSlot);
+    const text = constructMessage(vendor, details);
     console.log('text is:', text);
+
+    // Send email via Twilio
 
     return { statusCode: 200 };
   } catch (error) {
@@ -70,29 +85,3 @@ const sendEmail = ({ vendor, timeSlot, addresses = [] }) => {
 };
 
 module.exports = sendEmail;
-
-
-  //   ASDA
-  // const sendEmail = (startTime, endTime) => {
-  //   const msg = {
-  //     to: process.env.PERSONAL_EMAIL,
-  //     from: "findadelivery@example.com",
-  //     subject: "ASDA DELIVERY SLOT AVAILABLE",
-  //     text: `A delivery slot has become available for ${startTime.toDateString()}, ${startTime.getUTCHours()}:${startTime.getUTCMinutes()}0 - ${endTime.getUTCHours()}:${endTime.getUTCMinutes()}0
-
-  //     Book your slot - https:groceries.asda.com/checkout/book-slot?tab=deliver&origin=/`,
-  //   };
-
-  //   console.log('sending email');
-  //   // sgMail.send(msg);
-  // };
-
-  
-  // AMAZON
-  //
-  // const msg = {
-  //   to: process.env.PERSONAL_EMAIL,
-  //   from: "checkoutapp@example.com",
-  //   subject: "AMAZON PRIME DELIVERY SLOT AVAILABLE",
-  //   text: `Go to checkout - ${url}`,
-  // };
