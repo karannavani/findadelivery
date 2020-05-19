@@ -14,8 +14,13 @@ describe('sendEmail()', () => {
       process.env = defaultEnv;
     });
 
-    test('Returns a 200 OK if process.env.PERSONAL_EMAIL is found', async () => {
+    test('Returns a 400 Bad Request if no vendor is passed', async () => {
       const response = await sendEmail();
+      expect(response.statusCode).toBe(400);
+    });
+
+    test('Returns a 200 OK if vendor is passed', async () => {
+      const response = await sendEmail('ASDA');
       expect(response.statusCode).toBe(200);
     });
   });
@@ -27,9 +32,27 @@ describe('sendEmail()', () => {
 
       expect(response.statusCode).toBe(400);
     });
+    
+    test('Returns a 400 Bad Request if recipient is found but no vendor is passed', async () => {
+      const recipients = [
+        'nice_guy_curtis@test.com',
+        'nicer_guy_karan@test.com'
+      ];
+
+      const response = await sendEmail(null, recipients);
+
+      expect(response.statusCode).toBe(400);
+    });
 
     test('Returns a 200 OK if recipient is found', async () => {
-      const response = await sendEmail(['nice_guy_curtis@test.com']);
+      const vendor = 'ASDA';
+      const recipients = [
+        'nice_guy_curtis@test.com',
+        'nicer_guy_karan@test.com'
+      ];
+
+      const response = await sendEmail(vendor, recipients);
+
       expect(response.statusCode).toBe(200);
     });
   });

@@ -9,27 +9,26 @@ const constructMessage = (vendor) => {
 
   switch(vendor) {
     case 'ASDA':
-      console.log('This is Asda');
-      break;
+      return ('This is Asda');
 
     case 'AMAZON':
-      console.log('This is Amazon');
-      break;
+      return('This is Amazon');
 
     default:
-      return { statusCode: 400, message: 'No valid vendor found.' }
+      return false;
+  }
 };
 
-const sendEmail = (vendor, allRecipients = []) => {
+const sendEmail = (vendor, recipients = []) => {
   const sender = 'checkoutapp@example.com'; 
   const subject = "Find a Delivery - We've found a slot!";
   const recipient = process.env.PERSONAL_EMAIL;
 
-  if (recipient) allRecipients.push(recipient);
-  if (!recipient && allRecipients.length === 0) return { statusCode: 400, message: 'No recipient(s) found.' };
+  if (recipient) recipients.push(recipient);
+  if (!recipient && recipients.length === 0) return { statusCode: 400, message: 'No recipient(s) found.' };
 
-  console.log('allRecipients', allRecipients);
   const text = constructMessage(vendor);
+  if (!text) return { statusCode: 400, message: 'No valid vendor found.' };
 
   return { statusCode: 200 };
 };
