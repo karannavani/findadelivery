@@ -84,7 +84,8 @@ const sendEmail = async ({ vendor, details, addresses = [] }) => {
     return { statusCode: 200 };
   } catch (error) {
     // TODO: Find a way of handling unexpected errors.
-    console.log('Error is:', JSON.stringify(error.message));
+    // TODO: We should have a logger that we can toggle on/off for debugging.
+    // console.log('Error is:', JSON.stringify(error.message));
     return error;
   }
 };
