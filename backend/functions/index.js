@@ -37,26 +37,33 @@ const onJobScheduled = functions
   .runWith({ memory: "2GB" })
   .firestore.document("jobs/{docId}")
   .onCreate(async (snapshot, context) => {
+    const job = [];
     if (snapshot.data().state === "Scheduled") {
       console.log("scheduled found");
       const { worker, postcode } = snapshot.data();
       snapshot
         .data()
         .user.get()
-        .then(async (user) => {
+        .then((user) => {
           console.log("inside the then block");
           const email = user.data().email;
-          await updatePerformAt(snapshot).then(async () => {
-            return await workers[worker](postcode, email, snapshot.id);
-          });
+          updatePerformAt(snapshot)
+            .then(() => {
+              job.push(workers[worker](postcode, email, snapshot.id));
+            })
+            .catch((error) =>
+              console.log("updatePerformAt error from scheduled", error)
+            );
         });
     }
+    return Promise.all(job);
   });
 
 const onJobActive = functions
   .runWith({ memory: "2GB" })
   .firestore.document("jobs/{docId}")
   .onUpdate(async (snapshot, context) => {
+    const job = [];
     if (
       snapshot.after.data().state === "Active" &&
       snapshot.after.data().performAt === "Now"
@@ -65,13 +72,14 @@ const onJobActive = functions
       snapshot.after
         .data()
         .user.get()
-        .then(async (user) => {
+        .then((user) => {
           const email = user.data().email;
-          await updatePerformAt(snapshot.after).then(async () => {
-            return await workers[worker](postcode, email, snapshot.after.id);
+          updatePerformAt(snapshot.after).then(() => {
+            job.push(workers[worker](postcode, email, snapshot.after.id));
           });
         });
     }
+    return Promise.all(job);
   });
 
 const workers = {
@@ -81,7 +89,7 @@ const workers = {
   },
 };
 
-const updatePerformAt = async (snapshot) => {
+const updatePerformAt = (snapshot) => {
   const now = admin.firestore.Timestamp.now().toDate();
   now.setTime(now.getTime() + 5 * 60 * 1000);
   const performAt = admin.firestore.Timestamp.fromDate(now);
