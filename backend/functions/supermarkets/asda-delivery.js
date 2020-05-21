@@ -128,6 +128,3 @@ class AsdaDelivery {
 module.exports = {
   AsdaDelivery,
 };
-
-const testRun = new AsdaDelivery();
-testRun.checkAsda('SE11AP');
