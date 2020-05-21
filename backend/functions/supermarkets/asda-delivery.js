@@ -55,7 +55,8 @@ class AsdaDelivery {
     };
 
     try {
-      const { status_code, data } = await axios.post(
+      console.log('Making call...');
+      const r = await axios.post(
         'https://groceries.asda.com/api/v3/slot/view',
         {
           requestorigin,
@@ -63,10 +64,10 @@ class AsdaDelivery {
         }
       );
       // console.log({ status_code });
-      const slotData = data.data;
+      const slotData = r.data.data;
       this.getSlots(slotData);
     } catch (error) {
-      // console.log({ error });
+      console.log({ error });
     }
   }
 
@@ -77,7 +78,7 @@ class AsdaDelivery {
     // Otherwise...
     // console.log('get slots called');
     slot_days.forEach(day =>
-      day.slots.forEach(slot => {
+      day.slots.forEach(async slot => {
         if (
           slot.slot_info.status !== 'UNAVAILABLE' &&
           !this.availabilityVerified
@@ -127,3 +128,6 @@ class AsdaDelivery {
 module.exports = {
   AsdaDelivery,
 };
+
+const testRun = new AsdaDelivery();
+testRun.checkAsda('SE11AP');
