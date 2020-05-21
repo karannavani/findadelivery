@@ -1,100 +1,161 @@
-const axios = require("axios");
-const sgMail = require("@sendgrid/mail");
+const puppeteer = require('puppeteer');
+const sgMail = require('@sendgrid/mail');
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-let availabilityVerified = false;
+const sainsburysUrl = 'https://www.sainsburys.co.uk/shop/gb/groceries';
+const selectors = {
+  // Page 1 - Groceries
+  postcodeInput: '#checkPostCodePanel #postCode',
+  postcodeSubmit: '#checkPostCodePanel .button',
+  errorText: '.errorText',
 
-const checkAsda = (postcode) => {
-  console.log("running asda", postcode);
-  axios
-    .post("https://groceries.asda.com/api/v3/slot/view", {
-      requestorigin: "gi",
-      data: {
-        service_info: {
-          fulfillment_type: "DELIVERY",
-          enable_express: false,
-        },
-        start_date: "2020-04-25T00:00:00+01:00",
-        end_date: "2020-05-15T00:00:00+01:00",
-        reserved_slot_id: "",
-        service_address: {
-          postcode,
-        },
-        customer_info: {
-          account_id: "8774316050",
-        },
-        order_info: {
-          order_id: "20027220446",
-          restricted_item_types: [],
-          volume: 0,
-          weight: 0,
-          sub_total_amount: 0,
-          line_item_count: 0,
-          total_quantity: 0,
-        },
-      },
-    })
-    .then((res) => {
-      console.log(`statusCode: ${res.status_code}`);
-      // getSlots(res.data.data);
-    })
-    .catch((error) => {
-      console.error(error);
-    });
+  // Page 2 - Postcode Success
+  postcodeSuccessBody: 'body#postcodeCheckSuccess',
+  shoppingOptions: '.panel.shoppingOption',
+  shoppingOptionButton: '.button',
+
+  // Page 3 - Delivery Slots
+  slotPageBody: 'body#bookDeliverySlotPage',
+  timeSlotCells: 'td .access',
 };
 
-const getSlots = (data) => {
-  if (data.slot_days) {
-    // console.log(data.slot_days);
-    data.slot_days.forEach((day) => {
-      day.slots.forEach((slot) => {
-        if (slot.slot_info.status !== "UNAVAILABLE" && !availabilityVerified) {
-          console.log(slot.slot_info.status);
-          const startTime = new Date(slot.slot_info.start_time);
-          const endTime = new Date(slot.slot_info.end_time);
-          availabilityVerified = true;
-          sendEmail(startTime, endTime);
-          // there is a slot open on date:
-          console.log("date", `${startTime.toDateString()}`);
-          console.log(
-            "start time",
-            `${startTime.getUTCHours()}:${startTime.getUTCMinutes()}0`
-          );
-          console.log(
-            "start time",
-            `${endTime.getUTCHours()}:${endTime.getUTCMinutes()}0`
-          );
+const retrieveAvailableTimeSlots = async (postcode) => {
+  console.log('running sainsburys');
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+
+  // Debug - Allows for console.log to work in evaluate function
+  // page.on('console', (consoleObj) => console.log(consoleObj.text()));
+
+  /**
+   * Open page 1
+   */
+  await page.goto(sainsburysUrl, { waitUntil: 'networkidle2' });
+
+  /**
+   * Populates postcode field and submits to navigate to next page
+   */
+  await page.evaluate(
+    (postcode, selectors) => {
+      const postcodeInput = document.querySelector(selectors.postcodeInput);
+      const postcodeSubmit = document.querySelector(selectors.postcodeSubmit);
+      if (postcodeInput) {
+        postcodeInput.value = postcode;
+      }
+
+      if (postcodeSubmit) {
+        postcodeSubmit.click();
+        const error = document.querySelector(selectors.errorText);
+        // if (error) {
+        // Do something here
+        // }
+      }
+    },
+    postcode,
+    selectors
+  );
+
+  /**
+   * Page 2 loaded
+   */
+  await page.waitForSelector(selectors.postcodeSuccessBody);
+
+  /**
+   * Identifies the "Choose a time slot" option and clicks to navigate to next page
+   */
+  await page.evaluate((selectors) => {
+    const shoppingOptions = document.querySelectorAll(
+      selectors.shoppingOptions
+    );
+    const timeSlotButtonText = 'Choose a time slot';
+    let timeSlotButton;
+    if (shoppingOptions.length) {
+      for (let i = 0; i < shoppingOptions.length; i++) {
+        const currentButton = shoppingOptions[i].querySelector(
+          selectors.shoppingOptionButton
+        );
+        if (currentButton) {
+          const currentButtonText = currentButton.textContent.trim();
+          if (currentButtonText === timeSlotButtonText) {
+            timeSlotButton = currentButton;
+            break;
+          }
         }
+      }
+    }
+    if (timeSlotButton) {
+      timeSlotButton.click();
+    } else {
+      // No time slot button found - throw error here
+    }
+  }, selectors);
+
+  /**
+   * Page 3 loaded
+   */
+  await page.waitForSelector(selectors.slotPageBody);
+
+  /**
+   * Extract slots from html
+   */
+  const availableSlots = await page.evaluate((selectors) => {
+    const slots = document.querySelectorAll(selectors.timeSlotCells);
+    const filteredSlots = Array.from(slots)
+      .map((slot) => {
+        const slotWrapper = slot.parentElement;
+        if (slotWrapper.tagName === 'A') {
+          // It is a link to reserve a time slot
+          // Could potentially email links to users
+          const formatedSlotString = slotWrapper.textContent
+            .replace(/\r?\n|\r/g, '')
+            .trim();
+          return formatedSlotString;
+        } else {
+          // No link, no slot... set to null to filter out
+          return null;
+        }
+      })
+      .filter((slotString) => {
+        return slotString !== null;
       });
-    });
-  }
+
+    // Consider formatting the slot information here - for now
+    // the text content of the cells provides sufficient information
+
+    return filteredSlots;
+  }, selectors);
+
+  console.log(availableSlots, `Boom. Slots for ${postcode}`);
 };
 
-const sendEmail = (startTime, endTime) => {
-  const msg = {
-    to: process.env.PERSONAL_EMAIL,
-    from: "findadelivery@example.com",
-    subject: "ASDA DELIVERY SLOT AVAILABLE",
-    text: `A delivery slot has become available for ${startTime.toDateString()}, ${startTime.getUTCHours()}:${startTime.getUTCMinutes()}0 - ${endTime.getUTCHours()}:${endTime.getUTCMinutes()}0
-    
-    Book your slot - https://groceries.asda.com/checkout/book-slot?tab=deliver&origin=/`,
-  };
+retrieveAvailableTimeSlots('MK45 1QS');
+retrieveAvailableTimeSlots('W10 6SU');
 
-  console.log('sending email');
-  // sgMail.send(msg);
-};
+// const sendEmail = (startTime, endTime) => {
+//   const msg = {
+//     to: process.env.PERSONAL_EMAIL,
+//     from: 'findadelivery@example.com',
+//     subject: 'ASDA DELIVERY SLOT AVAILABLE',
+//     text: `A delivery slot has become available for ${startTime.toDateString()}, ${startTime.getUTCHours()}:${startTime.getUTCMinutes()}0 - ${endTime.getUTCHours()}:${endTime.getUTCMinutes()}0
 
-const asdaAvailabilityStatus = () => {
-  return availabilityVerified;
-};
+//     Book your slot - https://groceries.asda.com/checkout/book-slot?tab=deliver&origin=/`,
+//   };
 
-const asdaReset = () => {
-  availabilityVerified = false;
-}
+//   console.log('sending email');
+//   // sgMail.send(msg);
+// };
 
 module.exports = {
-  checkAsda,
-  asdaAvailabilityStatus,
-  asdaReset
+  retrieveAvailableTimeSlots,
 };
+
+// Navigate to sainsburys
+// Enter postcode
+// Click delivery
+// - also include click and collect?
+// Scrape available time slots
+
+// Requirements
+// Must allow cookies. Site doesn't work without.
+// Must clear cookies every search if using the same instance of Chrome.
