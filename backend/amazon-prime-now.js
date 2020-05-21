@@ -52,7 +52,7 @@ const checkAmazonPrimeNow = () => {
 
 const checkForAvailability = (deliverySlot) => {
   deliverySlot.includes(
-    "No delivery windows for today or tomorrow are currently available. New delivery windows are released throughout the day."
+    "No delivery windows are currently available. New delivery windows are released throughout the day."
   )
     ? compareToPrevious(false)
     : compareToPrevious(true);
