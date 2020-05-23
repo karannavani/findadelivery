@@ -1,2 +1,3 @@
 .env
 checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json
+backend/functions/.runtimeconfig.json
