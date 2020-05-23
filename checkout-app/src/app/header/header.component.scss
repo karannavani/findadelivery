@@ -1,0 +1,21 @@
+.navbar {
+  height: 65px;
+  background-color: #F3F3F3;
+
+  .container {
+    margin-top: 0 !important;
+  }
+
+  img {
+    width: 160px;
+  }
+
+  &-toggler {
+    border: none;
+  }
+
+  .nav-link {
+    font-size: 1rem;
+    &:hover, .active { }
+  }
+}

@@ -1,6 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { SchedulingService } from '../shared/services/scheduling/scheduling.service';
-import { AuthenticationService } from '../shared/services/authentication/authentication.service';
 
 @Component({
   selector: 'app-home',
@@ -9,12 +7,17 @@ import { AuthenticationService } from '../shared/services/authentication/authent
 })
 export class HomeComponent implements OnInit {
 
-  constructor(private schedulingService: SchedulingService, private authenticationService: AuthenticationService) { }
+  constructor() { }
 
-  ngOnInit(): void { }
+  public onClickRegister(): void {
+    console.log('Navigating to registration form...');
+  }
 
-  scheduleJob(store) {
-   this.schedulingService.createJob(store);
+  public onClickSignIn(): void {
+    console.log('Navigating to registration form...');
+  }
+
+  ngOnInit(): void {
   }
 
 }
