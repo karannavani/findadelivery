@@ -49,33 +49,41 @@ const emailAvailableSlots = async (postcode) => {
 const retrieveAvailableTimeSlots = async (postcode) => {
   console.log('running sainsburys');
   const browser = await puppeteer.launch();
-  const page = await browser.newPage();
 
-  // Debug - Allows for console.log to work in evaluate function
-  // page.on('console', (consoleObj) => console.log(consoleObj.text()));
+  try {
+    const page = await browser.newPage();
 
-  // Open page 1
-  await page.goto(sainsburysUrl, { waitUntil: 'networkidle2' });
+    // Debug - Allows for console.log to work in evaluate function
+    // page.on('console', (consoleObj) => console.log(consoleObj.text()));
 
-  // Populates postcode field and submits to navigate to next page
-  await page.evaluate(submitPostcode, postcode, selectors);
+    // Open page 1
+    await page.goto(sainsburysUrl, { waitUntil: 'networkidle2' });
 
-  // Page 2 loaded
-  await page.waitForSelector(selectors.postcodeSuccessBody);
+    // Populates postcode field and submits to navigate to next page
+    await page.evaluate(submitPostcode, postcode, selectors);
 
-  // Identifies the "Choose a time slot" option and clicks to navigate to next page
-  await page.evaluate(navigateToSlotPage, selectors);
+    // Page 2 loaded
+    await page.waitForSelector(selectors.postcodeSuccessBody);
 
-  // Page 3 loaded
-  await page.waitForSelector(selectors.slotPageBody);
+    // Identifies the "Choose a time slot" option and clicks to navigate to next page
+    await page.evaluate(navigateToSlotPage, selectors);
 
-  // Extract slots from html
-  const availableSlots = await page.evaluate(
-    extractAvailableTimeSlots,
-    selectors
-  );
+    // Page 3 loaded
+    await page.waitForSelector(selectors.slotPageBody);
 
-  return availableSlots;
+    // Extract slots from html
+    const availableSlots = await page.evaluate(
+      extractAvailableTimeSlots,
+      selectors
+    );
+
+    browser.close();
+    return availableSlots;
+  } catch (error) {
+    // Handle Error
+    console.log({ error });
+    browser.close();
+  }
 };
 
 const submitPostcode = (postcode, selectors) => {
