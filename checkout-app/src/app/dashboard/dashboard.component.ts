@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { SchedulingService } from '../shared/services/scheduling/scheduling.service';
 import { AuthenticationService } from '../shared/services/authentication/authentication.service';
 
@@ -9,9 +10,17 @@ import { AuthenticationService } from '../shared/services/authentication/authent
 })
 export class DashboardComponent implements OnInit {
 
-  constructor(private schedulingService: SchedulingService, private authenticationService: AuthenticationService) { }
+  constructor(
+    private schedulingService: SchedulingService,
+    private authenticationService: AuthenticationService,
+    private titleService: Title
+  ) { }
 
   ngOnInit(): void { }
+
+  setTitle(newTitle: string) {
+    this.titleService.setTitle(newTitle);
+  }
 
   scheduleJob(store) {
     this.schedulingService.createJob(store);

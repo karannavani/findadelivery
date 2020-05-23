@@ -12,6 +12,10 @@
   src: url('assets/webfonts/roboto/Roboto-Bold.ttf')
 }
 
+*:focus {
+  outline: none !important; // Remove that awful Bootstrap active border
+}
+
 body {
   font-family: 'Roboto';
   color: #313131;
@@ -23,8 +27,39 @@ h1, h2, h3, h4 {
   // color: #2f13cd;
 }
 
-button {
-  border-radius: 15px;
+h1 {
+  padding-bottom: 30px;
+}
+
+.container {
+  margin-top: 60px;
+}
+
+.fad-btn {
+  font-weight: bold;
+  margin-top: 30px;
+  padding: 10px;
+  width: 200px;
+  color: #fff;
+  background-color: #00785F; 
+  border: 0;
+  outline: 0;
+  border-radius: 10px;
+  transition: 0.3s;
+
+  &:hover, &:active {
+    background-color: #045746;
+  }
+}
+
+.light-grn {
+  color: #002B22;
+  background-color: #B6E5CE;
+  transition: 0.3s;
+
+  &:hover, &:active {
+    background-color: #A0D2BA;
+  }
 }
 
 .alert {

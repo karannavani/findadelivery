@@ -9,6 +9,14 @@ export class HomeComponent implements OnInit {
 
   constructor() { }
 
+  public onClickRegister(): void {
+    console.log('Navigating to registration form...');
+  }
+
+  public onClickSignIn(): void {
+    console.log('Navigating to registration form...');
+  }
+
   ngOnInit(): void {
   }
 

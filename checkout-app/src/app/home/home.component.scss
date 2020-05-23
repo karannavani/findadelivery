@@ -1,4 +1,17 @@
+h2 {
+  padding-top: 60px;
+  padding-left: 15px;
+}
+
 #basket-of-groceries {
-  width: 100%;
+  width: 80%;
   // max-width: 200px;
+}
+
+.light-grn {
+  margin-left: 20px;
+}
+
+.container:nth-child(2) {
+  background-color: red;
 }

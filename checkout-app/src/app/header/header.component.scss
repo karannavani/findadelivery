@@ -1,9 +1,13 @@
 .navbar {
-  height: 100px;
-  background-color: #F9F9F9;
+  height: 60px;
+  background-color: #F3F3F3;
+
+  .container {
+    margin-top: 0 !important;
+  }
 
   img {
-    width: 180px;
+    width: 160px;
   }
 
   &-toggler {
