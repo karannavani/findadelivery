@@ -2,7 +2,7 @@
 @import "./assets/webfonts/sinkinsans_400regular/stylesheet.css";
 body {
   font-family: "sinkin_sans400_regular";
-  background-color: #f7f7f7;
+  background-color: #fff;
 }
 
 button {
@@ -32,33 +32,6 @@ button {
     background-color: #2913a5 !important;
     border-color: #2913a5 !important;
   }
-}
-
-.navbar {
-  background-color: #553ed8;
-  box-shadow: -2px 200px 275px -151px rgba(0, 0, 0, 1);
-
-  &-brand {
-    font-size: 1rem;
-    text-transform: uppercase;
-  }
-
-  &-toggler {
-    border: none;
-  }
-
-  .nav-link {
-    color: rgba($color: #e4e4e4, $alpha: 0.9);
-    font-size: 1rem;
-    &:hover,
-    .active {
-      color: rgba($color: #fff, $alpha: 1) !important;
-    }
-  }
-}
-
-.container {
-  margin-top: 30px;
 }
 
 .supermarket-card {

@@ -14,7 +14,7 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void { }
 
   scheduleJob(store) {
-   this.schedulingService.createJob(store);
+    this.schedulingService.createJob(store);
   }
 
 }

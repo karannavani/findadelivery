@@ -1,23 +1,29 @@
-<nav class="navbar navbar-expand-lg navbar-dark shadow mb-5">
-  <a class="navbar-brand" href="#">find a delivery</a>
-  <button
-    class="navbar-toggler"
-    type="button"
-    data-toggle="collapse"
-    data-target="#navbarNavAltMarkup"
-    aria-controls="navbarNavAltMarkup"
-    aria-expanded="false"
-    aria-label="Toggle navigation"
-  >
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse justify-content-end" id="navbarNavAltMarkup">
-    <div class="navbar-nav" *ngIf="!(isAuthenticated$ | async)">
-      <a class="nav-item nav-link active" routerLink="/login">Sign in</a>
-    </div>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container">
+    <a class="navbar-brand" href="#">
+      <img src="assets/logo-with-text.png" alt="Logo for Find a Delivery" />
+    </a>
 
-    <div *ngIf="isAuthenticated$ | async" class="navbar-nav">
-      <a class="nav-item nav-link" routerLink="" (click)="signOut()">Sign out</a>
-    </div>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarNavAltMarkup"
+      aria-controls="navbarNavAltMarkup"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+      >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- <div class="collapse navbar-collapse justify-content-end" id="navbarNavAltMarkup"> -->
+    <!--   <div class="navbar-nav" *ngIf="!(isAuthenticated$ | async)"> -->
+    <!--     <a class="nav-item nav-link active" routerLink="/login">Sign in</a> -->
+    <!--   </div> -->
+
+    <!--   <div *ngIf="isAuthenticated$ | async" class="navbar-nav"> -->
+    <!--     <a class="nav-item nav-link" routerLink="" (click)="signOut()">Sign out</a> -->
+    <!--   </div> -->
+    <!-- </div> -->
   </div>
 </nav>

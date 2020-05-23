@@ -1,0 +1,17 @@
+.navbar {
+  height: 100px;
+  background-color: #F9F9F9;
+
+  img {
+    width: 180px;
+  }
+
+  &-toggler {
+    border: none;
+  }
+
+  .nav-link {
+    font-size: 1rem;
+    &:hover, .active { }
+  }
+}
