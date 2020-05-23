@@ -65,7 +65,6 @@ class AsdaDelivery {
           data,
         }
       );
-      // console.log({ status_code });
       const slotData = res.data.data;
       this.getSlots(slotData);
     } catch (error) {
