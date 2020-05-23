@@ -1,6 +1,7 @@
 h2 {
-  padding-top: 60px;
-  padding-left: 15px;
+  width: 100%;
+  padding-top: 50px;
+  padding-bottom: 30px;
 }
 
 #basket-of-groceries {
@@ -8,10 +9,35 @@ h2 {
   // max-width: 200px;
 }
 
-.light-grn {
-  margin-left: 20px;
+.fad-btn {
+  margin-right: 20px;
 }
 
-.container:nth-child(2) {
-  background-color: red;
+.container-fluid {
+  background-color: #F3F3F3;
 }
+
+.how-it-works {
+  p {
+    padding-top: 20px;
+    display: inline-block;
+    width: 80%;
+    text-align: left;
+  }
+}
+
+.hiw-img {
+  width: 50%;
+}
+
+// #hiw-img-1 {
+//   width: 160px;
+// }
+
+// #hiw-img-2 {
+//   width: 160px;
+// }
+
+// #hiw-img-3 {
+//   width: 160px;
+// }

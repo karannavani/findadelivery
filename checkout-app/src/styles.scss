@@ -22,13 +22,18 @@ body {
   background-color: #fff;
 }
 
-h1, h2, h3, h4 {
+h1, h2, h3, h4, h5 {
   font-family: 'Roboto Bold';
   // color: #2f13cd;
 }
 
 h1 {
   padding-bottom: 30px;
+}
+
+h5 {
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 
 .container {
