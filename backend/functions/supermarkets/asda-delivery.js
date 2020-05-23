@@ -86,7 +86,7 @@ class AsdaDelivery {
         ) {
           const startTime = new Date(slot.slot_info.start_time);
           const endTime = new Date(slot.slot_info.end_time);
-          this.availabilityVerified = true;
+          this.availabilityVerified = true; // this is the toggle that prevents more slots from being sent as separate emails
 
           await this.sendEmail(startTime, endTime);
 
