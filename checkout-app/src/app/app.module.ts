@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { AngularFireModule } from '@angular/fire';
-import { AngularFirestoreModule } from '@angular/fire/firestore';
+import { AngularFirestoreModule, SETTINGS } from '@angular/fire/firestore';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 import { environment } from '../environments/environment';
 
@@ -32,7 +32,18 @@ import { HeaderComponent } from './header/header.component';
     AngularFireAuthModule, // imports firebase/auth, only needed for auth features
     ReactiveFormsModule,
   ],
-  providers: [AuthGuard],
+  providers: [
+    AuthGuard,
+    {
+      provide: SETTINGS,
+      useValue: environment.production
+        ? undefined
+        : {
+            host: 'localhost:8080',
+            ssl: false,
+          },
+    },
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
