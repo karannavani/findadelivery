@@ -1,8 +1,26 @@
 /* You can add global styles to this file, and also import other style files */
 @import "./assets/webfonts/sinkinsans_400regular/stylesheet.css";
+
+// Fonts
+@font-face {
+  font-family: 'Roboto';
+  src: url('assets/webfonts/roboto/Roboto-Regular.ttf')
+}
+
+@font-face {
+  font-family: 'Roboto Bold';
+  src: url('assets/webfonts/roboto/Roboto-Bold.ttf')
+}
+
 body {
-  font-family: "sinkin_sans400_regular";
+  font-family: 'Roboto';
+  color: #313131;
   background-color: #fff;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Roboto Bold';
+  // color: #2f13cd;
 }
 
 button {
@@ -65,12 +83,6 @@ button {
     margin: 5px 0 10px 0;
     display: block;
   }
-}
-
-h2,
-h3,
-h4 {
-  color: #2f13cd;
 }
 
 .google-btn {
