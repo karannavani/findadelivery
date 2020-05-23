@@ -88,11 +88,13 @@ const navigateToSlotPage = (selectors) => {
   const shoppingOptions = document.querySelectorAll(selectors.shoppingOptions);
   const timeSlotButtonText = 'Choose a time slot';
   let timeSlotButton;
+
   if (shoppingOptions.length) {
     for (let i = 0; i < shoppingOptions.length; i++) {
       const currentButton = shoppingOptions[i].querySelector(
         selectors.shoppingOptionButton
       );
+
       if (currentButton) {
         const currentButtonText = currentButton.textContent.trim();
         if (currentButtonText === timeSlotButtonText) {
@@ -102,6 +104,7 @@ const navigateToSlotPage = (selectors) => {
       }
     }
   }
+
   if (timeSlotButton) {
     timeSlotButton.click();
   } else {
@@ -161,7 +164,7 @@ const sendEmail = (slots) => {
 };
 
 module.exports = {
-  emailAvailableTimeSlots,
+  retrieveAvailableTimeSlots,
 };
 
 // Navigate to sainsburys
