@@ -4,21 +4,44 @@ const sgMail = require('@sendgrid/mail');
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-const sainsburysUrl = 'https://www.sainsburys.co.uk/shop/gb/groceries';
+const icelandUrl = 'https://www.iceland.co.uk/book-delivery';
 const selectors = {
-  // Page 1 - Groceries
-  postcodeInput: '#checkPostCodePanel #postCode',
-  postcodeSubmit: '#checkPostCodePanel .button',
-  errorText: '.errorText',
+  // Step 1 - Groceries
+  postcodeInput: '#postal-code',
+  postcodeSubmit: 'form .check-postcode button',
+  errorText: '#postal-code-error',
+  deliveryAvailableStatus: 'form .delivery-status',
 
-  // Page 2 - Postcode Success
-  postcodeSuccessBody: 'body#postcodeCheckSuccess',
-  shoppingOptions: '.panel.shoppingOption',
-  shoppingOptionButton: '.button',
+  // Step 2 - Slots found
+  deliverySlotsLoaded: '.delivery-schedule-slots.active',
+  deliverySlotsTabs: '.delivery-schedule-slots',
+  availableDeliverySlots: '.delivery-schedule-slot:not(.unavailable)',
+  slotTime: '.delivery-schedule-slot-range > div',
+};
 
-  // Page 3 - Delivery Slots
-  slotPageBody: 'body#bookDeliverySlotPage',
-  timeSlotCells: 'td .access',
+const emailAvailableSlots = async (postcode) => {
+  const availableSlots = await retrieveAvailableTimeSlots(postcode);
+
+  if (availableSlots.length) {
+    console.log(
+      `
+*===========================*
+ Slots found for ${postcode}
+*===========================*
+    `,
+      availableSlots
+    );
+
+    if (availableSlots.length) {
+      // sendEmail(availableSlots);
+    }
+  } else {
+    console.log(`
+*==============================*
+ No slots found for ${postcode}
+*==============================*
+  `);
+  }
 };
 
 const retrieveAvailableTimeSlots = async (postcode) => {
@@ -29,14 +52,14 @@ const retrieveAvailableTimeSlots = async (postcode) => {
   // Debug - Allows for console.log to work in evaluate function
   // page.on('console', (consoleObj) => console.log(consoleObj.text()));
 
-  // Open page 1
-  await page.goto(sainsburysUrl, { waitUntil: 'networkidle2' });
+  // Open deliver slots page
+  await page.goto(icelandUrl, { waitUntil: 'networkidle2' });
 
-  // Populates postcode field and submits to navigate to next page
+  // Populates postcode field and submits to load slots
   await page.evaluate(submitPostcode, postcode, selectors);
 
-  // Page 2 loaded
-  await page.waitForSelector(selectors.postcodeSuccessBody);
+  // Step 2 loaded
+  await page.waitForSelector(selectors.deliverySlotsLoaded);
 
   // Identifies the "Choose a time slot" option and clicks to navigate to next page
   await page.evaluate(navigateToSlotPage, selectors);
@@ -50,23 +73,8 @@ const retrieveAvailableTimeSlots = async (postcode) => {
     selectors
   );
 
-  console.log(
-    `
-    *===========================*
-      Slots found for ${postcode}
-    *===========================*
-
-    `,
-    availableSlots
-  );
-
-  if (availableSlots.length) {
-    sendEmail(availableSlots);
-  }
+  return availableSlots;
 };
-
-retrieveAvailableTimeSlots('MK45 1QS');
-retrieveAvailableTimeSlots('W10 6SU');
 
 const submitPostcode = (postcode, selectors) => {
   const postcodeInput = document.querySelector(selectors.postcodeInput);
@@ -78,9 +86,15 @@ const submitPostcode = (postcode, selectors) => {
   if (postcodeSubmit) {
     postcodeSubmit.click();
     const error = document.querySelector(selectors.errorText);
-    // if (error) {
-    // Do something here
-    // }
+    const deliveryUnavailable = document.querySelector(
+      selectors.deliveryAvailableStatus
+    );
+    if (error) {
+      // Do something here
+    } else if (deliveryUnavailable) {
+      // Does not deliver to this postcode
+      // Do something here
+    }
   }
 };
 
@@ -140,7 +154,7 @@ const extractAvailableTimeSlots = (selectors) => {
   return filteredSlots;
 };
 
-const returnAvailableSlotsEmail = (availableSlots) => {
+const formatAvailableSlotsEmail = (availableSlots) => {
   let availableSlotsEmail;
   // Do something with slots to build html email in presentable way.
   return availableSlotsEmail;
@@ -163,17 +177,14 @@ const sendEmail = (slots) => {
   sgMail.send(msg);
 };
 
+emailAvailableSlots('MK45 1QS');
+emailAvailableSlots('W10 6SU');
+
 module.exports = {
-  retrieveAvailableTimeSlots,
+  emailAvailableSlots,
 };
 
 // Navigate to sainsburys
 // Enter postcode
-// Click delivery
-// - also include click and collect?
+// Check delivery
 // Scrape available time slots
-// May also send reserve timeslot link for each slot. Email must be in html otherwise can get very busy.
-
-// Requirements
-// Must allow cookies. Site doesn't work without.
-// Must clear cookies every search if using the same instance of Chrome.
