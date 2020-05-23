@@ -21,6 +21,31 @@ const selectors = {
   timeSlotCells: 'td .access',
 };
 
+const emailAvailableSlots = async (postcode) => {
+  const availableSlots = await retrieveAvailableTimeSlots(postcode);
+
+  if (availableSlots.length) {
+    console.log(
+      `
+*===========================*
+ Slots found for ${postcode}
+*===========================*
+    `,
+      availableSlots
+    );
+
+    if (availableSlots.length) {
+      // sendEmail(availableSlots);
+    }
+  } else {
+    console.log(`
+*==============================*
+ No slots found for ${postcode}
+*==============================*
+  `);
+  }
+};
+
 const retrieveAvailableTimeSlots = async (postcode) => {
   console.log('running sainsburys');
   const browser = await puppeteer.launch();
@@ -50,23 +75,8 @@ const retrieveAvailableTimeSlots = async (postcode) => {
     selectors
   );
 
-  console.log(
-    `
-    *===========================*
-      Slots found for ${postcode}
-    *===========================*
-
-    `,
-    availableSlots
-  );
-
-  if (availableSlots.length) {
-    sendEmail(availableSlots);
-  }
+  return availableSlots;
 };
-
-retrieveAvailableTimeSlots('MK45 1QS');
-retrieveAvailableTimeSlots('W10 6SU');
 
 const submitPostcode = (postcode, selectors) => {
   const postcodeInput = document.querySelector(selectors.postcodeInput);
@@ -140,7 +150,7 @@ const extractAvailableTimeSlots = (selectors) => {
   return filteredSlots;
 };
 
-const returnAvailableSlotsEmail = (availableSlots) => {
+const formatAvailableSlotsEmail = (availableSlots) => {
   let availableSlotsEmail;
   // Do something with slots to build html email in presentable way.
   return availableSlotsEmail;
@@ -163,8 +173,11 @@ const sendEmail = (slots) => {
   sgMail.send(msg);
 };
 
+emailAvailableSlots('MK45 1QS');
+emailAvailableSlots('W10 6SU');
+
 module.exports = {
-  retrieveAvailableTimeSlots,
+  emailAvailableSlots,
 };
 
 // Navigate to sainsburys
