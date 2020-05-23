@@ -15,6 +15,7 @@ import { LoginComponent } from './login/login.component';
 import { AsdaDeliveryComponent } from './asda/asda-delivery/asda-delivery.component';
 import { HeaderComponent } from './header/header.component';
 import { AuthGuard } from './shared/guards/auth.guard';
+import { FooterComponent } from './footer/footer.component';
 
 @NgModule({
   declarations: [
@@ -24,6 +25,7 @@ import { AuthGuard } from './shared/guards/auth.guard';
     LoginComponent,
     AsdaDeliveryComponent,
     HeaderComponent,
+    FooterComponent,
   ],
   imports: [
     BrowserModule,
