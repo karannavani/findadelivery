@@ -30,6 +30,7 @@ class AsdaDelivery {
     let end_date = new Date(start_date);
     // setting end date to be one month from the current date
     end_date.setMonth(start_date.getMonth() + 1);
+    // adding the ASDA request headers
     const requestorigin = "gi";
     const data = {
       service_info: {
