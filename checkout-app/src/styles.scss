@@ -28,10 +28,6 @@ body {
   margin-bottom: 180px;
 }
 
-main {
-  background-color: blue;
-}
-
 h1, h2, h3, h4, h5 {
   font-family: 'Roboto Bold';
   // color: #2f13cd;
@@ -48,33 +44,6 @@ h5 {
 
 .container {
   margin-top: 60px;
-}
-
-.fad-btn {
-  font-weight: bold;
-  margin-top: 30px;
-  padding: 10px;
-  width: 200px;
-  color: #fff;
-  background-color: #00785F; 
-  border: 0;
-  outline: 0;
-  border-radius: 10px;
-  transition: 0.3s;
-
-  &:hover, &:active {
-    background-color: #045746;
-  }
-}
-
-.light-grn {
-  color: #002B22;
-  background-color: #B6E5CE;
-  transition: 0.3s;
-
-  &:hover, &:active {
-    background-color: #A0D2BA;
-  }
 }
 
 span {
@@ -94,15 +63,32 @@ span {
   }
 }
 
-.btn-primary,
-.btn-primary:disabled {
-  background-color: #553ed8;
-  border-color: #553ed8;
-  &:hover,
-  &:focus,
-  &:active {
-    background-color: #2913a5 !important;
-    border-color: #2913a5 !important;
+.btn {
+  font-weight: bold;
+  padding: 10px;
+  width: 200px;
+  color: #fff;
+  outline: 0;
+  border: 0;
+  border-radius: 10px;
+  transition: 0.3s;
+}
+
+.btn-primary {
+  background-color: #00785F; 
+
+  &:hover, &:active {
+    background-color: #045746;
+  }
+}
+
+.btn-secondary {
+  color: #002B22;
+  background-color: #B6E5CE;
+
+  &:hover, &:active {
+    color: #002B22;
+    background-color: #A0D2BA;
   }
 }
 

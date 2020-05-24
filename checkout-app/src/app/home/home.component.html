@@ -14,8 +14,10 @@
       <p>This is completely free for all key workers and vulnerable people to
       support them in these challenging times.</p>
 
-      <button (click)="onClickRegister()" class="fad-btn">Request access</button>
-      <button (click)="onClickSignIn()" routerLink="/login" class="fad-btn light-grn">I already have access</button>
+      <div id="btn-container">
+        <button (click)="onClickRegister()" class="btn btn-primary mr-3">Request access</button>
+        <button (click)="onClickSignIn()" routerLink="/login" class="btn btn-secondary">I already have access</button>
+      </div>
     </div>
 
     <div class="col-sm text-right">

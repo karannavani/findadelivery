@@ -19,8 +19,8 @@
     <div class="collapse navbar-collapse justify-content-end" id="navbarNavAltMarkup">
       <div class="navbar-nav" *ngIf="!(isAuthenticated$ | async)">
         <a class="nav-item px-4 nav-link active d-lg-none" routerLink="/login">Sign in</a>
-        <a class="nav-item px-4 nav-link active" pageScroll [pageScrollDuration]="400" href="#section-hiw">How it works</a>
-        <a class="nav-item px-4 nav-link active" pageScroll [pageScrollDuration]="400" [pageScrollOffset]="60" href="#section-contact">Get in touch</a>
+        <a class="nav-item px-4 nav-link active" (click)="goToNextPage('howItWorks')">How it works</a>
+        <a class="nav-item px-4 nav-link active" (click)="goToNextPage('getInTouch')">Get in touch</a>
       </div>
 
       <div *ngIf="isAuthenticated$ | async" class="navbar-nav">

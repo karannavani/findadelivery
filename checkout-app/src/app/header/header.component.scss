@@ -17,6 +17,6 @@
   .nav-link {
     font-size: 0.9rem;
     font-family: 'Roboto Bold';
-    &:hover, .active { }
+    cursor: pointer;
   }
 }
