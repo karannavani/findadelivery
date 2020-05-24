@@ -12,6 +12,11 @@
   src: url('assets/webfonts/roboto/Roboto-Bold.ttf')
 }
 
+html {
+  position: relative;
+  min-height: 100%;
+}
+
 *:focus {
   outline: none !important; // Remove that awful Bootstrap active border
 }
@@ -20,6 +25,11 @@ body {
   font-family: 'Roboto';
   color: #313131;
   background-color: #fff;
+  margin-bottom: 180px;
+}
+
+main {
+  background-color: blue;
 }
 
 h1, h2, h3, h4, h5 {
