@@ -9,7 +9,7 @@ const selectors = {
   // Page 1 - Groceries
   postcodeInput: '#checkPostCodePanel #postCode',
   postcodeSubmit: '#checkPostCodePanel .button',
-  errorText: '.errorText',
+  postcodeErrors: '.errorText, .errorMessage',
 
   // Page 2 - Postcode Success
   postcodeSuccessBody: 'body#postcodeCheckSuccess',
@@ -22,27 +22,29 @@ const selectors = {
 };
 
 const emailAvailableSlots = async (postcode) => {
-  const availableSlots = await retrieveAvailableTimeSlots(postcode);
+  try {
+    const availableSlotsArray = await retrieveAvailableTimeSlots(postcode);
 
-  if (availableSlots.length) {
-    console.log(
-      `
-*===========================*
- Slots found for ${postcode}
-*===========================*
-    `,
-      availableSlots
-    );
+    if (availableSlotsArray.length) {
+      console.log(
+        `
+  *===========================*
+   Slots found for ${postcode}
+  *===========================*
+      `,
+        availableSlotsArray
+      );
 
-    if (availableSlots.length) {
       // sendEmail(availableSlots);
+    } else {
+      console.log(`
+  *==============================*
+   No slots found for ${postcode}
+  *==============================*
+    `);
     }
-  } else {
-    console.log(`
-*==============================*
- No slots found for ${postcode}
-*==============================*
-  `);
+  } catch (error) {
+    console.log(error);
   }
 };
 
@@ -62,8 +64,10 @@ const retrieveAvailableTimeSlots = async (postcode) => {
     // Populates postcode field and submits to navigate to next page
     await page.evaluate(submitPostcode, postcode, selectors);
 
-    // Page 2 loaded
-    await page.waitForSelector(selectors.postcodeSuccessBody);
+    // Page 2 loaded or invalid postcode
+    await page.waitForSelector(
+      `${selectors.postcodeSuccessBody}, ${selectors.postcodeErrors}`
+    );
 
     // Identifies the "Choose a time slot" option and clicks to navigate to next page
     await page.evaluate(navigateToSlotPage, selectors);
@@ -72,17 +76,17 @@ const retrieveAvailableTimeSlots = async (postcode) => {
     await page.waitForSelector(selectors.slotPageBody);
 
     // Extract slots from html
-    const availableSlots = await page.evaluate(
+    const availableSlotsArray = await page.evaluate(
       extractAvailableTimeSlots,
       selectors
     );
 
+    // Finish up
     browser.close();
-    return availableSlots;
+    return availableSlotsArray;
   } catch (error) {
-    // Handle Error
-    console.log({ error });
     browser.close();
+    throw error;
   }
 };
 
@@ -91,21 +95,30 @@ const submitPostcode = (postcode, selectors) => {
   const postcodeSubmit = document.querySelector(selectors.postcodeSubmit);
   if (postcodeInput) {
     postcodeInput.value = postcode;
+  } else {
+    throw new Error(
+      'Missing element - Cannot find postcodeInput on page, please amend selector'
+    );
   }
 
   if (postcodeSubmit) {
     postcodeSubmit.click();
-    const error = document.querySelector(selectors.errorText);
-    // if (error) {
-    // Do something here
-    // }
+  } else {
+    throw new Error(
+      'Missing element - Cannot find postcodeSubmit on page, please amend selector'
+    );
   }
 };
 
 const navigateToSlotPage = (selectors) => {
+  const postcodeErrors = document.querySelectorAll(selectors.postcodeErrors);
   const shoppingOptions = document.querySelectorAll(selectors.shoppingOptions);
   const timeSlotButtonText = 'Choose a time slot';
   let timeSlotButton;
+
+  if (postcodeErrors.length) {
+    throw new Error('Invalid postcode');
+  }
 
   if (shoppingOptions.length) {
     for (let i = 0; i < shoppingOptions.length; i++) {
@@ -121,18 +134,24 @@ const navigateToSlotPage = (selectors) => {
         }
       }
     }
+  } else {
+    throw new Error(
+      'Missing element - Cannot find shoppingOptions on page, please amend selector'
+    );
   }
 
   if (timeSlotButton) {
     timeSlotButton.click();
   } else {
-    // No time slot button found - throw error here
+    throw new Error(
+      'Missing element - Cannot find timeSlotButton on page, please amend selector'
+    );
   }
 };
 
 const extractAvailableTimeSlots = (selectors) => {
   const slots = document.querySelectorAll(selectors.timeSlotCells);
-  const filteredSlots = Array.from(slots)
+  const availableSlotsArray = Array.from(slots)
     .map((slot) => {
       const slotWrapper = slot.parentElement;
       if (slotWrapper.tagName === 'A') {
@@ -155,7 +174,7 @@ const extractAvailableTimeSlots = (selectors) => {
   // Consider formatting the slot information here - for now
   // the text content of the cells provides sufficient information
 
-  return filteredSlots;
+  return availableSlotsArray;
 };
 
 const formatAvailableSlotsEmail = (availableSlots) => {
@@ -181,6 +200,7 @@ const sendEmail = (slots) => {
   sgMail.send(msg);
 };
 
+emailAvailableSlots('MK45');
 emailAvailableSlots('MK45 1QS');
 emailAvailableSlots('W10 6SU');
 

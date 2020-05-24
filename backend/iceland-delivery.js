@@ -8,150 +8,158 @@ const icelandUrl = 'https://www.iceland.co.uk/book-delivery';
 const selectors = {
   // Step 1 - Groceries
   postcodeInput: '#postal-code',
-  postcodeSubmit: 'form .check-postcode button',
-  errorText: '#postal-code-error',
-  deliveryAvailableStatus: 'form .delivery-status',
+  postcodeSubmit: '#main form.check-postcode button',
+  postcodeError: '#postal-code-error',
+  deliveryStatus: '#main form.check-postcode .delivery-status',
 
   // Step 2 - Slots found
-  deliverySlotsLoaded: '.delivery-schedule-slots.active',
-  deliverySlotsTabs: '.delivery-schedule-slots',
-  availableDeliverySlots: '.delivery-schedule-slot:not(.unavailable)',
+  slotDatesAvailability: '.delivery-range', // text content
+  availableSlots: '.delivery-schedule-slot:not(.unavailable)',
   slotTime: '.delivery-schedule-slot-range > div',
+  slotDate: '[data-slots-key]',
 };
 
 const emailAvailableSlots = async (postcode) => {
-  const availableSlots = await retrieveAvailableTimeSlots(postcode);
+  console.log('running iceland');
 
-  if (availableSlots.length) {
-    console.log(
-      `
-*===========================*
- Slots found for ${postcode}
-*===========================*
-    `,
-      availableSlots
-    );
+  try {
+    const availableSlotsObj = await retrieveAvailableTimeSlots(postcode);
 
-    if (availableSlots.length) {
+    if (Object.keys(availableSlotsObj).length) {
+      console.log(
+        `
+  *===========================*
+   Slots found for ${postcode}
+  *===========================*
+      `,
+        availableSlotsObj
+      );
       // sendEmail(availableSlots);
+    } else {
+      console.log(`
+      *==============================*
+       No slots found for ${postcode}
+      *==============================*
+        `);
     }
-  } else {
-    console.log(`
-*==============================*
- No slots found for ${postcode}
-*==============================*
-  `);
+  } catch (error) {
+    console.log('Error - ', error.message);
   }
 };
 
 const retrieveAvailableTimeSlots = async (postcode) => {
-  console.log('running sainsburys');
   const browser = await puppeteer.launch();
-  const page = await browser.newPage();
 
-  // Debug - Allows for console.log to work in evaluate function
-  // page.on('console', (consoleObj) => console.log(consoleObj.text()));
+  try {
+    const page = await browser.newPage();
 
-  // Open deliver slots page
-  await page.goto(icelandUrl, { waitUntil: 'networkidle2' });
+    // Debug - Allows for console.log to work in evaluate function
+    // page.on('console', (consoleObj) => console.log(consoleObj.text()));
 
-  // Populates postcode field and submits to load slots
-  await page.evaluate(submitPostcode, postcode, selectors);
+    // Open deliver slots page
+    await page.goto(icelandUrl, { waitUntil: 'networkidle2' });
 
-  // Step 2 loaded
-  await page.waitForSelector(selectors.deliverySlotsLoaded);
+    // Populates postcode field
+    await page.evaluate(enterPostcode, postcode, selectors);
 
-  // Identifies the "Choose a time slot" option and clicks to navigate to next page
-  await page.evaluate(navigateToSlotPage, selectors);
+    // Waits for delivery status to render
+    await page.waitForSelector(selectors.deliveryStatus);
 
-  // Page 3 loaded
-  await page.waitForSelector(selectors.slotPageBody);
+    // Submits the postcode field providing it's valid
+    await page.evaluate(submitPostcode, selectors);
 
-  // Extract slots from html
-  const availableSlots = await page.evaluate(
-    extractAvailableTimeSlots,
-    selectors
-  );
+    // // Step 2 loaded
+    await page.waitForNavigation({ waitUntil: 'networkidle2' });
 
-  return availableSlots;
+    // Extracts available slots from page
+    const availableSlotsObj = await page.evaluate(
+      extractAvailableTimeSlots,
+      selectors
+    );
+
+    // Finish up
+    browser.close();
+    return availableSlotsObj;
+  } catch (error) {
+    browser.close();
+    throw error;
+  }
 };
 
-const submitPostcode = (postcode, selectors) => {
+const enterPostcode = (postcode, selectors) => {
   const postcodeInput = document.querySelector(selectors.postcodeInput);
-  const postcodeSubmit = document.querySelector(selectors.postcodeSubmit);
   if (postcodeInput) {
+    postcodeInput.focus();
     postcodeInput.value = postcode;
+    // Triggers error message/delivery status if any.
+    postcodeInput.blur();
+
+    const postcodeError = document.querySelector(selectors.postcodeError);
+
+    if (postcodeError) {
+      // throw new Error(error.textContent);
+      // Is this the only possible error?
+      throw new Error('Invalid postcode');
+    }
+  } else {
+    throw new Error(
+      'Missing element - Cannot find postcodeInput on page, please amend selector'
+    );
+  }
+};
+
+const submitPostcode = (selectors) => {
+  const postcodeSubmit = document.querySelector(selectors.postcodeSubmit);
+  const deliveryStatus = document.querySelector(selectors.deliveryStatus);
+  const unavailableClass = 'unavailable';
+
+  if (deliveryStatus) {
+    if (deliveryStatus.classList.contains(unavailableClass)) {
+      throw new Error('Iceland does not deliver to this address');
+    }
+  } else {
+    throw new Error(
+      'Missing element - Cannot find deliveryStatus on page, please amend selector'
+    );
   }
 
   if (postcodeSubmit) {
     postcodeSubmit.click();
-    const error = document.querySelector(selectors.errorText);
-    const deliveryUnavailable = document.querySelector(
-      selectors.deliveryAvailableStatus
-    );
-    if (error) {
-      // Do something here
-    } else if (deliveryUnavailable) {
-      // Does not deliver to this postcode
-      // Do something here
-    }
-  }
-};
-
-const navigateToSlotPage = (selectors) => {
-  const shoppingOptions = document.querySelectorAll(selectors.shoppingOptions);
-  const timeSlotButtonText = 'Choose a time slot';
-  let timeSlotButton;
-
-  if (shoppingOptions.length) {
-    for (let i = 0; i < shoppingOptions.length; i++) {
-      const currentButton = shoppingOptions[i].querySelector(
-        selectors.shoppingOptionButton
-      );
-
-      if (currentButton) {
-        const currentButtonText = currentButton.textContent.trim();
-        if (currentButtonText === timeSlotButtonText) {
-          timeSlotButton = currentButton;
-          break;
-        }
-      }
-    }
-  }
-
-  if (timeSlotButton) {
-    timeSlotButton.click();
   } else {
-    // No time slot button found - throw error here
+    throw new Error(
+      'Missing element - Cannot find postcodeSubmit on page, please amend selector'
+    );
   }
 };
 
 const extractAvailableTimeSlots = (selectors) => {
-  const slots = document.querySelectorAll(selectors.timeSlotCells);
-  const filteredSlots = Array.from(slots)
-    .map((slot) => {
-      const slotWrapper = slot.parentElement;
-      if (slotWrapper.tagName === 'A') {
-        // It is a link to reserve a time slot
-        // Could potentially email links to users - TODO
-        const formatedSlotString = slotWrapper.textContent
-          .replace(/\r?\n|\r/g, '')
-          .replace('Book delivery for ', '')
-          .trim();
-        return formatedSlotString;
-      } else {
-        // No link, no slot... set to null to filter out
-        return null;
+  const availableSlotsObj = {};
+  const noDatesAvailableText = 'No dates available';
+  const slotDatesAvailability = document.querySelector(
+    selectors.slotDatesAvailability
+  );
+
+  if (slotDatesAvailability.textContent.includes(noDatesAvailableText)) {
+    throw new Error('No dates available');
+  } else {
+    const availableSlots = document.querySelectorAll(selectors.availableSlots);
+    Array.from(availableSlots).forEach((slot) => {
+      const date = slot
+        .closest(selectors.slotDate)
+        .getAttribute('data-slots-key');
+
+      if (!availableSlotsObj[date]) {
+        // Init the date prop
+        availableSlotsObj[date] = [];
       }
-    })
-    .filter((slotString) => {
-      return slotString !== null;
+
+      availableSlotsObj[date].push(
+        slot.querySelector(selectors.slotTime).textContent
+      );
     });
+  }
 
-  // Consider formatting the slot information here - for now
-  // the text content of the cells provides sufficient information
-
-  return filteredSlots;
+  return availableSlotsObj;
 };
 
 const formatAvailableSlotsEmail = (availableSlots) => {
@@ -177,8 +185,9 @@ const sendEmail = (slots) => {
   sgMail.send(msg);
 };
 
-emailAvailableSlots('MK45 1QS');
+emailAvailableSlots('MK45 1Q');
 emailAvailableSlots('W10 6SU');
+emailAvailableSlots('MK451QS');
 
 module.exports = {
   emailAvailableSlots,
