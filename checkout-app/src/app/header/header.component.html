@@ -4,26 +4,28 @@
       <img src="assets/logo.png" alt="Logo for Find a Delivery" />
     </a>
 
-    <!-- <button -->
-    <!--   class="navbar-toggler" -->
-    <!--   type="button" -->
-    <!--   data-toggle="collapse" -->
-    <!--   data-target="#navbarNavAltMarkup" -->
-    <!--   aria-controls="navbarNavAltMarkup" -->
-    <!--   aria-expanded="false" -->
-    <!--   aria-label="Toggle navigation" -->
-    <!--   > -->
-    <!--   <span class="navbar-toggler-icon"></span> -->
-    <!-- </button> -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-toggle="collapse"
+      data-target="#navbarNavAltMarkup"
+      aria-controls="navbarNavAltMarkup"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+      >
+      <span class="navbar-toggler-icon"></span>
+    </button>
 
-    <!-- <div class="collapse navbar-collapse justify-content-end" id="navbarNavAltMarkup"> -->
-    <!--   <div class="navbar-nav" *ngIf="!(isAuthenticated$ | async)"> -->
-    <!--     <a class="nav-item nav-link active" routerLink="/login">Sign in</a> -->
-    <!--   </div> -->
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNavAltMarkup">
+      <div class="navbar-nav" *ngIf="!(isAuthenticated$ | async)">
+        <a class="nav-item nav-link active" routerLink="/login">Sign in</a>
+        <a class="nav-item nav-link active" pageScroll [pageScrollDuration]="400" href="#section-hiw">How it works</a>
+        <a class="nav-item nav-link active" pageScroll [pageScrollDuration]="400" [pageScrollOffset]="60" href="#section-contact">Get in touch</a>
+      </div>
 
-    <!--   <div *ngIf="isAuthenticated$ | async" class="navbar-nav"> -->
-    <!--     <a class="nav-item nav-link" routerLink="" (click)="signOut()">Sign out</a> -->
-    <!--   </div> -->
-    <!-- </div> -->
+      <div *ngIf="isAuthenticated$ | async" class="navbar-nav">
+        <a class="nav-item nav-link" routerLink="" (click)="signOut()">Sign out</a>
+      </div>
+    </div>
   </div>
 </nav>
