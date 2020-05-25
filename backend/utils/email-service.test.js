@@ -6,50 +6,55 @@ const defaultEnv = process.env;
 
 jest.mock('axios');
 
+const generateTestPersonalisation = ({ now, numOfSlots, merchant, address, url, showMore }) => {
+  const slots = [];
+
+  console.log('numOfSlots is:', numOfSlots);
+
+  for (let i = 0; i < numOfSlots; i++) {
+    slots.push({
+      formattedDate: format(now, 'EEEE, do LLLL'),
+      startTime: format(now, 'k:mm'),
+      endTime: format(addMinutes(now, 30), 'k:mm'),
+      price: '£1.50'
+    });
+  }
+
+  return {
+    to: [{ email: address }],
+    dynamic_template_data: {
+      more: showMore,
+      'btn-link': url,
+      merchant,
+      slots
+    }
+  }
+};
+
 describe('emailService', () => {
 
   describe('.build()', () => {
     test('returns object in the correct format with one addressee', () => {
       const now = new Date();
-      const merchant = 'asda';
       const url = 'https://google.com';
+      const merchant = 'asda';
       const addresses = ['lincoln.kaneadam@gmail.com'];
       const slots = [
         { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' } // An hour after the previous slot
+        { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' }
       ];
 
+      const personalization1 = generateTestPersonalisation({ now, merchant: 'Asda', numOfSlots: 2, address: addresses[0], url, showMore: false });
       const expectedObj = {
         from: { email: 'noreply@findadelivery.com' },
         template_id:'d-ae627fe97d3c43209c1608fb43dfe7f0',
-        personalizations: [{
-          to: [{ email: 'lincoln.kaneadam@gmail.com' }],
-          dynamic_template_data: {
-            more: false,
-            'btn-link': 'https://google.com',
-            merchant: 'Asda', // I didn't use the merchant var here to make our expectations SUPER clear.
-            slots: [
-              {
-                formattedDate: format(now, 'EEEE, do LLLL'),
-                startTime: format(now, 'k:mm'),
-                endTime: format(addMinutes(now, 30), 'k:mm'),
-                price: '£1.50'
-              },
-              {
-                formattedDate: format(now, 'EEEE, do LLLL'),
-                startTime: format(addMinutes(now, 60), 'k:mm'),
-                endTime: format(addMinutes(now, 90), 'k:mm'),
-                price: '£1.50'
-              },
-            ]
-          }
-        }]
+        personalizations: [personalization1]
       };
 
-      const returnedObj = emailService.build(merchant, addresses, slots, url);
+      const returnedObj = emailService.build(merchant, slots, addresses, url);
       expect(returnedObj).toEqual(expectedObj);
     });
-    
+
     test('returns object in the correct format with >one addressee', () => {
       const now = new Date();
       const merchant = 'asda';
@@ -57,40 +62,21 @@ describe('emailService', () => {
       const addresses = ['lincoln.kaneadam@gmail.com', 'kane.lincoln@icloud.com'];
       const slots = [
         { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' }, // An hour after the previous slot
+        { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' }
       ];
 
+      const personalization1 = generateTestPersonalisation({ now, merchant: 'Asda', numOfSlots: 2, address: addresses[0], url, showMore: false });
+      const personalization2 = generateTestPersonalisation({ now, merchant: 'Asda', numOfSlots: 2, address: addresses[1], url, showMore: false });
       const expectedObj = {
         from: { email: 'noreply@findadelivery.com' },
         template_id:'d-ae627fe97d3c43209c1608fb43dfe7f0',
-        personalizations: [{
-          to: [
-            { email: 'lincoln.kaneadam@gmail.com' },
-            { email: 'kane.lincoln@icloud.com' },
-          ],
-          dynamic_template_data: {
-            more: false,
-            'btn-link': 'https://google.com',
-            merchant: 'Asda',
-            slots: [
-              {
-                formattedDate: format(now, 'EEEE, do LLLL'),
-                startTime: format(now, 'k:mm'),
-                endTime: format(addMinutes(now, 30), 'k:mm'),
-                price: '£1.50'
-              },
-              {
-                formattedDate: format(now, 'EEEE, do LLLL'),
-                startTime: format(addMinutes(now, 60), 'k:mm'),
-                endTime: format(addMinutes(now, 90), 'k:mm'),
-                price: '£1.50'
-              },
-            ]
-          }
-        }]
+        personalizations: [
+          personalization1,
+          personalization2
+        ]
       };
 
-      const returnedObj = emailService.build(merchant, addresses, slots, url);
+      const returnedObj = emailService.build(merchant, slots, addresses, url);
       expect(returnedObj).toEqual(expectedObj);
     });
 
@@ -101,65 +87,28 @@ describe('emailService', () => {
       const addresses = ['lincoln.kaneadam@gmail.com', 'kane.lincoln@icloud.com'];
       const slots = [ // 9 slots here.
         { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' }, // An hour after the previous slot
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' },
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' }, 
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' },
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' },
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' },
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' },
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' }
+        { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
+        { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
+        { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
+        { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
+        { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
+        { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
+        { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
+        { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
       ];
 
+      const personalization1 = generateTestPersonalisation({ now, merchant: 'Asda', numOfSlots: 5, address: addresses[0], url, showMore: true });
+      const personalization2 = generateTestPersonalisation({ now, merchant: 'Asda', numOfSlots: 5, address: addresses[1], url, showMore: true });
       const expectedObj = {
         from: { email: 'noreply@findadelivery.com' },
         template_id:'d-ae627fe97d3c43209c1608fb43dfe7f0',
-        personalizations: [{
-          to: [
-            { email: 'lincoln.kaneadam@gmail.com' },
-            { email: 'kane.lincoln@icloud.com' },
-          ],
-          dynamic_template_data: {
-            more: true,
-            'btn-link': 'https://google.com',
-            merchant: 'Asda',
-            slots: [ // 6 slots here.
-              {
-                formattedDate: format(now, 'EEEE, do LLLL'),
-                startTime: format(now, 'k:mm'),
-                endTime: format(addMinutes(now, 30), 'k:mm'),
-                price: '£1.50'
-              },
-              {
-                formattedDate: format(now, 'EEEE, do LLLL'),
-                startTime: format(addMinutes(now, 60), 'k:mm'),
-                endTime: format(addMinutes(now, 90), 'k:mm'),
-                price: '£1.50'
-              },
-              {
-                formattedDate: format(now, 'EEEE, do LLLL'),
-                startTime: format(addMinutes(now, 60), 'k:mm'),
-                endTime: format(addMinutes(now, 90), 'k:mm'),
-                price: '£1.50'
-              },
-              {
-                formattedDate: format(now, 'EEEE, do LLLL'),
-                startTime: format(addMinutes(now, 60), 'k:mm'),
-                endTime: format(addMinutes(now, 90), 'k:mm'),
-                price: '£1.50'
-              },
-              {
-                formattedDate: format(now, 'EEEE, do LLLL'),
-                startTime: format(addMinutes(now, 60), 'k:mm'),
-                endTime: format(addMinutes(now, 90), 'k:mm'),
-                price: '£1.50'
-              }
-            ]
-          }
-        }]
+        personalizations: [
+          personalization1,
+          personalization2
+        ] 
       };
 
-      const returnedObj = emailService.build(merchant, addresses, slots, url);
+      const returnedObj = emailService.build(merchant, slots, addresses, url);
       expect(returnedObj).toEqual(expectedObj);
     });
   });
