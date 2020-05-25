@@ -5,12 +5,14 @@ const format = require('date-fns/format');
 const util = require('util');
 const supermarkets = require('../supermarkets');
 
-const formatSlotData = (slots, maxSlotsAllowed) => {
+const formatSlotData = (slots, maxSlotsPerEmail) => {
   const formattedSlots = [];
 
-  for (let i = 0; i < maxSlotsAllowed; i++) {
+  for (let i = 0; i < maxSlotsPerEmail; i++) {
     const formattedSlot = {};
 
+    // If either of you can think of a nicer way to do this, let me know. I
+    // don't like the aesthetic.
     formattedSlot.formattedDate = format(slots[i].start, 'EEEE, do LLLL');
     formattedSlot.startTime = format(slots[i].start, 'k:mm');
     formattedSlot.endTime = format(slots[i].end, 'k:mm');
@@ -23,12 +25,12 @@ const formatSlotData = (slots, maxSlotsAllowed) => {
 }
 
 const buildSgPersonalization = (merchant, slots, address, url) => {
-  const maxSlotsAllowed = slots.length > 5 ? 5 : slots.length;
+  const maxSlotsPerEmail = slots.length > 5 ? 5 : slots.length;
   const dynamicTemplateData = {
     'btn-link': url,
-    more: slots.length > maxSlotsAllowed ? true : false,
+    more: slots.length > maxSlotsPerEmail ? true : false,
     merchant: supermarkets[merchant],
-    slots: formatSlotData(slots, maxSlotsAllowed)
+    slots: formatSlotData(slots, maxSlotsPerEmail)
   };
 
   const personalization = {
@@ -41,11 +43,10 @@ const buildSgPersonalization = (merchant, slots, address, url) => {
 };
 
 const buildSgPayload = (merchant, slots, addresses, url) => {
-  const personalizations = addresses.map((address) => buildSgPersonalization(merchant, slots, address, url)); // SendGrid only lets you create 1000 of these per email
   const sgPayload = {
     from: { email: 'noreply@findadelivery.com' },
     template_id:'d-ae627fe97d3c43209c1608fb43dfe7f0',
-    personalizations
+    personalizations: addresses.map((address) => buildSgPersonalization(merchant, slots, address, url)) // SendGrid only lets you create 1000 of these per email
   };
 
   // console.log('sgPayload is:', sgPayload);
@@ -68,8 +69,6 @@ const defineAddresses = (addresses) => {
 };
 
 const sendEmail = async (data) => {
-  const url = 'https://api.sendgrid.com/v3/mail/send';
-
   try {
     if (!data) throw { statusCode: 400, message: 'No data passed.' };
     // TODO: Let's quit immediately if we can't find a valid API key. It's fine for
@@ -77,7 +76,7 @@ const sendEmail = async (data) => {
     // if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     // else throw { statusCode: 400, message: 'No API key found.' };
 
-    console.log('Checking parameters are valid...');
+    console.log('Checking required parameters exist...');
 
     const requiredArgs = ['merchant', 'slots', 'url'];
     requiredArgs.forEach((arg) => {
@@ -117,18 +116,3 @@ module.exports = {
   send: sendEmail,
   build: buildSgPayload
 };
-
-// const addMinutes = require('date-fns/addMinutes');
-// const now = new Date;
-// const slots = [ // 9 slots here.
-//   { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
-//   { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' }, // An hour after the previous slot
-//   { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' },
-//   { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' },
-//   { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' },
-//   { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' },
-//   { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' },
-//   { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' },
-//   { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' }
-// ];
-// sendEmail({ merchant: 'asda', slots, url: 'https://kanelincoln.com', addresses: ['iamkarannavani@gmail.com', 'curtis.burns28@gmail.com'] });
