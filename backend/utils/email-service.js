@@ -2,30 +2,30 @@ require('dotenv').config(); // For testing
 const axios = require('axios');
 const format = require('date-fns/format');
 const util = require('util');
-const supermarkets = require('./supermarkets');
+const supermarkets = require('../supermarkets');
 
 const formatSlotData = (slots, maxSlotsAllowed) => {
   const formattedSlots = [];
 
   for (let i = 0; i < maxSlotsAllowed; i++) {
-    const formattedSlotObj = {};
+    const formattedSlot = {};
 
-    formattedSlotObj.formattedDate = format(slots[i].start, 'EEEE, do LLLL');
-    formattedSlotObj.startTime = format(slots[i].start, 'k:mm');
-    formattedSlotObj.endTime = format(slots[i].end, 'k:mm');
-    formattedSlotObj.price = slots[i].price;
+    formattedSlot.formattedDate = format(slots[i].start, 'EEEE, do LLLL');
+    formattedSlot.startTime = format(slots[i].start, 'k:mm');
+    formattedSlot.endTime = format(slots[i].end, 'k:mm');
+    formattedSlot.price = slots[i].price;
 
-    formattedSlots.push(formattedSlotObj);
+    formattedSlots.push(formattedSlot);
   }
 
   return formattedSlots;
 }
 
-const buildSgPayload = (merchant, addresses, slots) => {
+const buildSgPayload = (merchant, addresses, slots, url) => {
   const maxSlotsAllowed = slots.length > 5 ? 5 : slots.length;
   const to = addresses.map((address) => ({ email: address }));
   const dynamic_template_data = {
-    'btn-link': slots[0].url,
+    'btn-link': url,
     more: slots.length > maxSlotsAllowed ? true : false,
     merchant: supermarkets[merchant],
     slots: formatSlotData(slots, maxSlotsAllowed)
@@ -67,7 +67,7 @@ const sendEmail = async (data) => {
 
     console.log('Checking parameters are valid...');
 
-    const requiredArgs = ['merchant', 'slots'];
+    const requiredArgs = ['merchant', 'slots', 'url'];
     requiredArgs.forEach((arg) => {
       // TODO: Check a supported merchant has been submitted
       // TODO: Build logger for debugging/testing
@@ -75,7 +75,7 @@ const sendEmail = async (data) => {
       if (data[arg] === undefined || data[arg] === null) throw { statusCode: 400, message: 'Required argument missing: ' + arg }
     });
 
-    const { merchant, slots } = data;
+    const { merchant, slots, url } = data;
 
     console.log('Finished checking parameters.');
     const addresses = defineAddresses(data.addresses);
@@ -84,7 +84,7 @@ const sendEmail = async (data) => {
     await axios({
       method: 'post',
       url: 'https://api.sendgrid.com/v3/mail/send',
-      data: JSON.stringify(buildSgPayload(merchant, addresses, slots)),
+      data: JSON.stringify(buildSgPayload(merchant, addresses, slots, url)),
       headers: {
         Authorization: `Bearer ${process.env.SENDGRID_API_KEY}`,
         'Content-Type': 'application/json'
