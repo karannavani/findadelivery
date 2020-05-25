@@ -4,11 +4,10 @@ const format = require('date-fns/format');
 const util = require('util');
 const supermarkets = require('./supermarkets');
 
-const formatSlotData = (slots) => {
+const formatSlotData = (slots, maxSlotsAllowed) => {
   const formattedSlots = [];
-  const maxNumberOfSlotsToDisplay = slots.length > 6 ? 6 : slots.length;
 
-  for (let i = 0; i < maxNumberOfSlotsToDisplay; i++) {
+  for (let i = 0; i < maxSlotsAllowed; i++) {
     const formattedSlotObj = {};
 
     formattedSlotObj.formattedDate = format(slots[i].start, 'EEEE, do LLLL');
@@ -23,8 +22,14 @@ const formatSlotData = (slots) => {
 }
 
 const buildSgPayload = (merchant, addresses, slots) => {
-  const dynamic_template_data = { 'btn-link': slots[0].url, merchant: supermarkets[merchant], slots: formatSlotData(slots) };
+  const maxSlotsAllowed = slots.length > 5 ? 5 : slots.length;
   const to = addresses.map((address) => ({ email: address }));
+  const dynamic_template_data = {
+    'btn-link': slots[0].url,
+    more: slots.length > maxSlotsAllowed ? true : false,
+    merchant: supermarkets[merchant],
+    slots: formatSlotData(slots, maxSlotsAllowed)
+  };
 
   const payload = {
     from: { email: 'noreply@findadelivery.com' },
