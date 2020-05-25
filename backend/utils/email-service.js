@@ -5,16 +5,21 @@ const util = require('util');
 const supermarkets = require('./supermarkets');
 
 const formatSlotData = (slots) => {
-  return slots.map((slot) => {
+  const formattedSlots = [];
+  const maxNumberOfSlotsToDisplay = slots.length > 6 ? 6 : slots.length;
+
+  for (let i = 0; i < maxNumberOfSlotsToDisplay; i++) {
     const formattedSlotObj = {};
 
-    formattedSlotObj.formattedDate = format(slot.start, 'EEEE, do LLLL');
-    formattedSlotObj.startTime = format(slot.start, 'k:mm');
-    formattedSlotObj.endTime = format(slot.end, 'k:mm');
-    formattedSlotObj.price = slot.price;
+    formattedSlotObj.formattedDate = format(slots[i].start, 'EEEE, do LLLL');
+    formattedSlotObj.startTime = format(slots[i].start, 'k:mm');
+    formattedSlotObj.endTime = format(slots[i].end, 'k:mm');
+    formattedSlotObj.price = slots[i].price;
 
-    return formattedSlotObj;
-  });
+    formattedSlots.push(formattedSlotObj);
+  }
+
+  return formattedSlots;
 }
 
 const buildSgPayload = (merchant, addresses, slots) => {
@@ -31,18 +36,18 @@ const buildSgPayload = (merchant, addresses, slots) => {
 };
 
 const defineAddresses = (addresses) => {
-    console.log('Looking for addresses...');
+  console.log('Looking for addresses...');
 
-    const primaryAddress = process.env.PERSONAL_EMAIL;
+  const primaryAddress = process.env.PERSONAL_EMAIL;
 
-    if (!primaryAddress && !addresses) throw { statusCode: 400, message: 'No recipient(s) found.' };
-    if (!primaryAddress && addresses.length > 0) {
-      return addresses;
-    } else if (primaryAddress) {
-      return [primaryAddress];
-    } else {
-      return [primaryAddress, ...addresses];
-    }
+  if (!primaryAddress && !addresses) throw { statusCode: 400, message: 'No recipient(s) found.' };
+  if (!primaryAddress && addresses.length > 0) {
+    return addresses;
+  } else if (primaryAddress) {
+    return [primaryAddress];
+  } else {
+    return [primaryAddress, ...addresses];
+  }
 };
 
 const sendEmail = async (data) => {
@@ -54,7 +59,7 @@ const sendEmail = async (data) => {
     // now but is a good check to have in place.
     // if (process.env.SENDGRID_API_KEY) sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     // else throw { statusCode: 400, message: 'No API key found.' };
-    
+
     console.log('Checking parameters are valid...');
 
     const requiredArgs = ['merchant', 'slots'];
@@ -95,3 +100,11 @@ module.exports = {
   send: sendEmail,
   build: buildSgPayload // TODO: Find a way to test this without exposing it.
 }
+
+const addMinutes = require('date-fns/addMinutes');
+const now = new Date;
+const slots = [
+  { date: now, start: now, end: addMinutes(now, 30), url: 'https://google.com', price: '£1.50' },
+  { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), url: 'https://google.com', price: '£1.50' } // An hour after the previous slot
+];
+sendEmail({ merchant: 'asda', slots });
