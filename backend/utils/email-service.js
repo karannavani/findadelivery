@@ -1,4 +1,5 @@
 require('dotenv').config(); // For testing
+
 const axios = require('axios');
 const format = require('date-fns/format');
 const util = require('util');
@@ -21,7 +22,7 @@ const formatSlotData = (slots, maxSlotsAllowed) => {
   return formattedSlots;
 }
 
-const buildSgPersonalisation = (merchant, slots, address, url) => {
+const buildSgPersonalization = (merchant, slots, address, url) => {
   const maxSlotsAllowed = slots.length > 5 ? 5 : slots.length;
   const dynamicTemplateData = {
     'btn-link': url,
@@ -30,20 +31,24 @@ const buildSgPersonalisation = (merchant, slots, address, url) => {
     slots: formatSlotData(slots, maxSlotsAllowed)
   };
 
-  return {
+  const personalization = {
     to: [{ email: address }],
     dynamic_template_data: dynamicTemplateData
   };
+
+  // console.log('personalization is:', personalization);
+  return personalization;
 };
 
 const buildSgPayload = (merchant, slots, addresses, url) => {
-  const personalizations = addresses.map((address) => buildSgPersonalisation(merchant, slots, address, url));
+  const personalizations = addresses.map((address) => buildSgPersonalization(merchant, slots, address, url)); // SendGrid only lets you create 1000 of these per email
   const sgPayload = {
     from: { email: 'noreply@findadelivery.com' },
     template_id:'d-ae627fe97d3c43209c1608fb43dfe7f0',
     personalizations
   };
 
+  // console.log('sgPayload is:', sgPayload);
   return sgPayload;
 }
 
@@ -110,8 +115,8 @@ const sendEmail = async (data) => {
 
 module.exports = {
   send: sendEmail,
-  build: buildSgPayload // TODO: Find a way to test this without exposing it.
-}
+  build: buildSgPayload
+};
 
 // const addMinutes = require('date-fns/addMinutes');
 // const now = new Date;

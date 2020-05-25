@@ -1,7 +1,8 @@
-const emailService = require('./email-service');
 const axios = require('axios');
 const format = require('date-fns/format');
 const addMinutes = require('date-fns/addMinutes');
+const emailService = require('./email-service');
+
 const defaultEnv = process.env;
 
 jest.mock('axios');
