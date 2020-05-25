@@ -24,6 +24,7 @@ describe('emailService', () => {
         personalizations: [{
           to: [{ email: 'lincoln.kaneadam@gmail.com' }],
           dynamic_template_data: {
+            more: false,
             'btn-link': 'https://google.com',
             merchant: 'Asda', // I didn't use the merchant var here to make our expectations SUPER clear.
             slots: [
@@ -66,6 +67,7 @@ describe('emailService', () => {
             { email: 'kane.lincoln@icloud.com' },
           ],
           dynamic_template_data: {
+            more: false,
             'btn-link': 'https://google.com',
             merchant: 'Asda',
             slots: [
@@ -90,7 +92,7 @@ describe('emailService', () => {
       expect(returnedObj).toEqual(expectedObj);
     });
 
-    test('returns only 6 slots if there are more than 6 slots available', () => {
+    test('returns only 5 slots if there are more than 5 slots available', () => {
       const now = new Date();
       const merchant = 'asda';
       const addresses = ['lincoln.kaneadam@gmail.com', 'kane.lincoln@icloud.com'];
@@ -115,6 +117,7 @@ describe('emailService', () => {
             { email: 'kane.lincoln@icloud.com' },
           ],
           dynamic_template_data: {
+            more: true,
             'btn-link': 'https://google.com',
             merchant: 'Asda',
             slots: [ // 6 slots here.
@@ -122,12 +125,6 @@ describe('emailService', () => {
                 formattedDate: format(now, 'EEEE, do LLLL'),
                 startTime: format(now, 'k:mm'),
                 endTime: format(addMinutes(now, 30), 'k:mm'),
-                price: '£1.50'
-              },
-              {
-                formattedDate: format(now, 'EEEE, do LLLL'),
-                startTime: format(addMinutes(now, 60), 'k:mm'),
-                endTime: format(addMinutes(now, 90), 'k:mm'),
                 price: '£1.50'
               },
               {
@@ -266,4 +263,3 @@ describe('emailService', () => {
   });
 
 });
-
