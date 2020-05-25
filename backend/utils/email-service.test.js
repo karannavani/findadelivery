@@ -12,10 +12,11 @@ describe('emailService', () => {
     test('returns object in the correct format with one addressee', () => {
       const now = new Date();
       const merchant = 'asda';
+      const url = 'https://google.com';
       const addresses = ['lincoln.kaneadam@gmail.com'];
       const slots = [
-        { date: now, start: now, end: addMinutes(now, 30), url: 'https://google.com', price: '£1.50' },
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), url: 'https://google.com', price: '£1.50' } // An hour after the previous slot
+        { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
+        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' } // An hour after the previous slot
       ];
 
       const expectedObj = {
@@ -45,17 +46,18 @@ describe('emailService', () => {
         }]
       };
 
-      const returnedObj = emailService.build(merchant, addresses, slots);
+      const returnedObj = emailService.build(merchant, addresses, slots, url);
       expect(returnedObj).toEqual(expectedObj);
     });
     
     test('returns object in the correct format with >one addressee', () => {
       const now = new Date();
       const merchant = 'asda';
+      const url = 'https://google.com';
       const addresses = ['lincoln.kaneadam@gmail.com', 'kane.lincoln@icloud.com'];
       const slots = [
-        { date: now, start: now, end: addMinutes(now, 30), url: 'https://google.com', price: '£1.50' },
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), url: 'https://google.com', price: '£1.50' } // An hour after the previous slot
+        { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
+        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' }, // An hour after the previous slot
       ];
 
       const expectedObj = {
@@ -88,24 +90,25 @@ describe('emailService', () => {
         }]
       };
 
-      const returnedObj = emailService.build(merchant, addresses, slots);
+      const returnedObj = emailService.build(merchant, addresses, slots, url);
       expect(returnedObj).toEqual(expectedObj);
     });
 
     test('returns only 5 slots if there are more than 5 slots available', () => {
       const now = new Date();
       const merchant = 'asda';
+      const url = 'https://google.com';
       const addresses = ['lincoln.kaneadam@gmail.com', 'kane.lincoln@icloud.com'];
       const slots = [ // 9 slots here.
-        { date: now, start: now, end: addMinutes(now, 30), url: 'https://google.com', price: '£1.50' },
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), url: 'https://google.com', price: '£1.50' }, // An hour after the previous slot
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), url: 'https://google.com', price: '£1.50' },
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), url: 'https://google.com', price: '£1.50' }, 
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), url: 'https://google.com', price: '£1.50' },
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), url: 'https://google.com', price: '£1.50' },
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), url: 'https://google.com', price: '£1.50' },
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), url: 'https://google.com', price: '£1.50' },
-        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), url: 'https://google.com', price: '£1.50' }
+        { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
+        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' }, // An hour after the previous slot
+        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' },
+        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' }, 
+        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' },
+        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' },
+        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' },
+        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' },
+        { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), price: '£1.50' }
       ];
 
       const expectedObj = {
@@ -156,7 +159,7 @@ describe('emailService', () => {
         }]
       };
 
-      const returnedObj = emailService.build(merchant, addresses, slots);
+      const returnedObj = emailService.build(merchant, addresses, slots, url);
       expect(returnedObj).toEqual(expectedObj);
     });
   });
@@ -215,7 +218,7 @@ describe('emailService', () => {
         ];
 
         axios.mockImplementationOnce(() => Promise.resolve({}));
-        const response = await emailService.send({ merchant: 'amazon', slots });
+        const response = await emailService.send({ merchant: 'amazon', slots, url: 'https://google.com' });
 
         expect(axios).toHaveBeenCalled();
         expect(response.statusCode).toBe(200);
@@ -254,7 +257,7 @@ describe('emailService', () => {
         ];
 
         axios.mockImplementationOnce(() => Promise.resolve({}));
-        const response = await emailService.send({ merchant, slots, addresses });
+        const response = await emailService.send({ merchant, slots, addresses, url: 'https://google.com' });
 
         expect(axios).toHaveBeenCalled();
         expect(response.statusCode).toBe(200);
