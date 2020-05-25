@@ -1,4 +1,4 @@
-// const sgMail = require('@sendgrid/mail'); // Twilio SendGrid (https://github.com/sendgrid/sendgrid-nodejs)
+require('dotenv').config(); // For testing
 const axios = require('axios');
 const format = require('date-fns/format');
 const util = require('util');
@@ -46,9 +46,9 @@ const defineAddresses = (addresses) => {
   const primaryAddress = process.env.PERSONAL_EMAIL;
 
   if (!primaryAddress && !addresses) throw { statusCode: 400, message: 'No recipient(s) found.' };
-  if (!primaryAddress && addresses.length > 0) {
+  if (!primaryAddress) {
     return addresses;
-  } else if (primaryAddress) {
+  } else if (!addresses) {
     return [primaryAddress];
   } else {
     return [primaryAddress, ...addresses];
@@ -81,8 +81,6 @@ const sendEmail = async (data) => {
     const addresses = defineAddresses(data.addresses);
     console.log('Addresses found:', addresses);
 
-    // console.log('payload is:', JSON.stringify(buildSgPayload(merchant, addresses, slots)));
-
     await axios({
       method: 'post',
       url: 'https://api.sendgrid.com/v3/mail/send',
@@ -105,11 +103,3 @@ module.exports = {
   send: sendEmail,
   build: buildSgPayload // TODO: Find a way to test this without exposing it.
 }
-
-const addMinutes = require('date-fns/addMinutes');
-const now = new Date;
-const slots = [
-  { date: now, start: now, end: addMinutes(now, 30), url: 'https://google.com', price: '£1.50' },
-  { date: now, start: addMinutes(now, 60), end: addMinutes(now, 90), url: 'https://google.com', price: '£1.50' } // An hour after the previous slot
-];
-sendEmail({ merchant: 'asda', slots });
