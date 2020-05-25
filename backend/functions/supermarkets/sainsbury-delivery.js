@@ -1,211 +1,266 @@
-require('dotenv').config();
 const puppeteer = require('puppeteer');
+const moment = require('moment');
 const sgMail = require('@sendgrid/mail');
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+const serviceAccount = require('../checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json');
+const db = admin
+  .initializeApp(
+    {
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: 'https://checkout-app-uk.firebaseio.com',
+    },
+    "Sainsbury's Delivery"
+  )
+  .firestore();
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+sgMail.setApiKey(functions.config().sendgrid.api_key);
 
-const sainsburysUrl = 'https://www.sainsburys.co.uk/shop/gb/groceries';
-const selectors = {
-  // Page 1 - Groceries
-  postcodeInput: '#checkPostCodePanel #postCode',
-  postcodeSubmit: '#checkPostCodePanel .button',
-  postcodeErrors: '.errorText, .errorMessage',
+class SainsburysDelivery {
+  constructor(postcode, email, docId) {
+    this.merchant = "Sainsbury's";
+    this.postcode = postcode;
+    this.email = email;
+    this.docId = docId;
+    this.availabilityVerified = false;
+    this.slots = {};
+    this.entryUrl = 'https://www.sainsburys.co.uk/shop/gb/groceries';
+    this.selectors = {
+      // Page 1 - Groceries
+      postcodeInput: '#checkPostCodePanel #postCode',
+      postcodeSubmit: '#checkPostCodePanel .button',
+      postcodeErrors: '.errorText, .errorMessage',
 
-  // Page 2 - Postcode Success
-  postcodeSuccessBody: 'body#postcodeCheckSuccess',
-  shoppingOptions: '.panel.shoppingOption',
-  shoppingOptionButton: '.button',
+      // Page 2 - Postcode Success
+      postcodeSuccessBody: 'body#postcodeCheckSuccess',
+      shoppingOptions: '.panel.shoppingOption',
+      shoppingOptionButton: '.button',
 
-  // Page 3 - Delivery Slots
-  slotPageBody: 'body#bookDeliverySlotPage',
-  timeSlotCells: 'td .access',
-};
+      // Page 3 - Delivery Slots
+      slotPageBody: 'body#bookDeliverySlotPage',
+      timeSlotCells: 'td .access',
+    };
 
-const emailAvailableSlots = async (postcode) => {
-  try {
-    const availableSlotsArray = await retrieveAvailableTimeSlots(postcode);
+    this.checkSlots();
+  }
 
-    if (availableSlotsArray.length) {
-      console.log(
-        `
-  *===========================*
-   Slots found for ${postcode}
-  *===========================*
-      `,
-        availableSlotsArray
-      );
+  async checkSlots() {
+    try {
+      this.slots = await this.retrieveAvailableTimeSlots();
 
-      // sendEmail(availableSlots);
-    } else {
-      console.log(`
-  *==============================*
-   No slots found for ${postcode}
-  *==============================*
-    `);
+      if (this.availabilityVerified) {
+        // Complete job and remove
+        // await db.doc(`jobs/${this.docId}`).update({ state: 'Completed' });
+        // this.sendEmail(this.slots);
+        console.log(this.slots);
+      } else {
+        console.log('Not slots currently available');
+      }
+    } catch (error) {
+      console.log(error);
     }
-  } catch (error) {
-    console.log(error);
-  }
-};
-
-const retrieveAvailableTimeSlots = async (postcode) => {
-  console.log('running sainsburys');
-  const browser = await puppeteer.launch();
-
-  try {
-    const page = await browser.newPage();
-
-    // Debug - Allows for console.log to work in evaluate function
-    // page.on('console', (consoleObj) => console.log(consoleObj.text()));
-
-    // Open page 1
-    await page.goto(sainsburysUrl, { waitUntil: 'networkidle2' });
-
-    // Populates postcode field and submits to navigate to next page
-    await page.evaluate(submitPostcode, postcode, selectors);
-
-    // Page 2 loaded or invalid postcode
-    await page.waitForSelector(
-      `${selectors.postcodeSuccessBody}, ${selectors.postcodeErrors}`
-    );
-
-    // Identifies the "Choose a time slot" option and clicks to navigate to next page
-    await page.evaluate(navigateToSlotPage, selectors);
-
-    // Page 3 loaded
-    await page.waitForSelector(selectors.slotPageBody);
-
-    // Extract slots from html
-    const availableSlotsArray = await page.evaluate(
-      extractAvailableTimeSlots,
-      selectors
-    );
-
-    // Finish up
-    browser.close();
-    return availableSlotsArray;
-  } catch (error) {
-    browser.close();
-    throw error;
-  }
-};
-
-const submitPostcode = (postcode, selectors) => {
-  const postcodeInput = document.querySelector(selectors.postcodeInput);
-  const postcodeSubmit = document.querySelector(selectors.postcodeSubmit);
-  if (postcodeInput) {
-    postcodeInput.value = postcode;
-  } else {
-    throw new Error(
-      'Missing element - Cannot find postcodeInput on page, please amend selector'
-    );
   }
 
-  if (postcodeSubmit) {
-    postcodeSubmit.click();
-  } else {
-    throw new Error(
-      'Missing element - Cannot find postcodeSubmit on page, please amend selector'
-    );
-  }
-};
+  async retrieveAvailableTimeSlots() {
+    const { postcode, selectors, entryUrl } = this;
 
-const navigateToSlotPage = (selectors) => {
-  const postcodeErrors = document.querySelectorAll(selectors.postcodeErrors);
-  const shoppingOptions = document.querySelectorAll(selectors.shoppingOptions);
-  const timeSlotButtonText = 'Choose a time slot';
-  let timeSlotButton;
+    const browser = await puppeteer.launch();
 
-  if (postcodeErrors.length) {
-    throw new Error('Invalid postcode');
-  }
+    try {
+      const page = await browser.newPage();
 
-  if (shoppingOptions.length) {
-    for (let i = 0; i < shoppingOptions.length; i++) {
-      const currentButton = shoppingOptions[i].querySelector(
-        selectors.shoppingOptionButton
+      // Debug - Allows for console.log to work in evaluate function
+      // page.on('console', (consoleObj) => console.log(consoleObj.text()));
+
+      // Open page 1
+      await page.goto(entryUrl, { waitUntil: 'networkidle2' });
+
+      // Populates postcode field and submits to navigate to next page
+      await page.evaluate(this.submitPostcode, postcode, selectors);
+
+      // Page 2 loaded or invalid postcode
+      await page.waitForSelector(
+        `${selectors.postcodeSuccessBody}, ${selectors.postcodeErrors}`
       );
 
-      if (currentButton) {
-        const currentButtonText = currentButton.textContent.trim();
-        if (currentButtonText === timeSlotButtonText) {
-          timeSlotButton = currentButton;
-          break;
+      // Identifies the "Choose a time slot" option and clicks to navigate to next page
+      await page.evaluate(this.navigateToSlotPage, selectors);
+
+      // Page 3 loaded
+      await page.waitForSelector(selectors.slotPageBody);
+
+      // Extract slots from html
+      const availableSlotsArray = await page.evaluate(
+        this.extractAvailableTimeSlots,
+        selectors
+      );
+
+      const slots = this.returnFormattedSlots(availableSlotsArray);
+
+      // Finish up
+      browser.close();
+      return slots;
+    } catch (error) {
+      browser.close();
+      throw error;
+    }
+  }
+
+  async submitPostcode(postcode, selectors) {
+    const postcodeInput = document.querySelector(selectors.postcodeInput);
+    const postcodeSubmit = document.querySelector(selectors.postcodeSubmit);
+    if (postcodeInput) {
+      postcodeInput.value = postcode;
+    } else {
+      throw new Error(
+        'Missing element - Cannot find postcodeInput on page, please amend selector'
+      );
+    }
+
+    if (postcodeSubmit) {
+      postcodeSubmit.click();
+    } else {
+      throw new Error(
+        'Missing element - Cannot find postcodeSubmit on page, please amend selector'
+      );
+    }
+  }
+
+  async navigateToSlotPage(selectors) {
+    const postcodeErrors = document.querySelectorAll(selectors.postcodeErrors);
+    const shoppingOptions = document.querySelectorAll(
+      selectors.shoppingOptions
+    );
+    const timeSlotButtonText = 'Choose a time slot';
+    let timeSlotButton;
+
+    if (postcodeErrors.length) {
+      throw new Error('Invalid postcode');
+    }
+
+    if (shoppingOptions.length) {
+      for (let i = 0; i < shoppingOptions.length; i++) {
+        const currentButton = shoppingOptions[i].querySelector(
+          selectors.shoppingOptionButton
+        );
+
+        if (currentButton) {
+          const currentButtonText = currentButton.textContent.trim();
+          if (currentButtonText === timeSlotButtonText) {
+            timeSlotButton = currentButton;
+            break;
+          }
         }
       }
+    } else {
+      throw new Error(
+        'Missing element - Cannot find shoppingOptions on page, please amend selector'
+      );
     }
-  } else {
-    throw new Error(
-      'Missing element - Cannot find shoppingOptions on page, please amend selector'
-    );
+
+    if (timeSlotButton) {
+      timeSlotButton.click();
+    } else {
+      throw new Error(
+        'Missing element - Cannot find timeSlotButton on page, please amend selector'
+      );
+    }
   }
 
-  if (timeSlotButton) {
-    timeSlotButton.click();
-  } else {
-    throw new Error(
-      'Missing element - Cannot find timeSlotButton on page, please amend selector'
-    );
+  async extractAvailableTimeSlots(selectors) {
+    const slots = document.querySelectorAll(selectors.timeSlotCells);
+    const availableSlotsArray = Array.from(slots)
+      .map((slot) => {
+        const slotWrapper = slot.parentElement;
+        if (slotWrapper.tagName === 'A') {
+          // It is a link to reserve a time slot
+          // Could potentially email links to users - TODO
+          const formatedSlotString = slotWrapper.textContent
+            .replace(/\r?\n|\r/g, '')
+            .replace('Book delivery for ', '')
+            .trim();
+          return formatedSlotString;
+        } else {
+          // No link, no slot... set to null to filter out
+          return null;
+        }
+      })
+      .filter((slotString) => {
+        return slotString !== null;
+      });
+
+    // Consider formatting the slot information here - for now
+    // the text content of the cells provides sufficient information
+
+    return availableSlotsArray;
   }
-};
 
-const extractAvailableTimeSlots = (selectors) => {
-  const slots = document.querySelectorAll(selectors.timeSlotCells);
-  const availableSlotsArray = Array.from(slots)
-    .map((slot) => {
-      const slotWrapper = slot.parentElement;
-      if (slotWrapper.tagName === 'A') {
-        // It is a link to reserve a time slot
-        // Could potentially email links to users - TODO
-        const formatedSlotString = slotWrapper.textContent
-          .replace(/\r?\n|\r/g, '')
-          .replace('Book delivery for ', '')
-          .trim();
-        return formatedSlotString;
-      } else {
-        // No link, no slot... set to null to filter out
-        return null;
-      }
-    })
-    .filter((slotString) => {
-      return slotString !== null;
-    });
-
-  // Consider formatting the slot information here - for now
-  // the text content of the cells provides sufficient information
-
-  return availableSlotsArray;
-};
-
-const formatAvailableSlotsEmail = (availableSlots) => {
-  let availableSlotsEmail;
-  // Do something with slots to build html email in presentable way.
-  return availableSlotsEmail;
-};
-
-const sendEmail = (slots) => {
-  console.log(process.env.PERSONAL_EMAIL);
-  const msg = {
-    to: process.env.PERSONAL_EMAIL,
-    from: 'findadelivery@example.com',
-    subject: `Find a delivery - Sainsburys delivery slot${
-      slots.length > 1 ? 's' : ''
-    } available`,
-    text: `Here are the available slots we've found for your postcode:
+  // This is to be replaced
+  async sendEmail(slots) {
+    console.log(process.env.PERSONAL_EMAIL);
+    const msg = {
+      to: process.env.PERSONAL_EMAIL,
+      from: 'findadelivery@example.com',
+      subject: `Find a delivery - Sainsburys delivery slot${
+        slots.length > 1 ? 's' : ''
+      } available`,
+      text: `Here are the available slots we've found for your postcode:
 
     ${slots.join('\n\n')}
   `,
-  };
-  console.log('sending email');
-  sgMail.send(msg);
-};
+    };
+    console.log('sending email');
+    sgMail.send(msg);
+  }
 
-emailAvailableSlots('MK45');
-emailAvailableSlots('MK45 1QS');
-emailAvailableSlots('W10 6SU');
+  // Transform function
+  /**
+   * @returns {object} - structured in accordance with sendMail function.
+   * @param {array} availableSlotsArray - Array of slot strings containing date, time and * price e.g. "Thursday 28 May 2020, between 6:30pm - 7:30pm, available for £2.50"
+   */
+  returnFormattedSlots(availableSlotsArray) {
+    const slotsObj = {
+      'btn-link': this.entryUrl,
+      merchant: this.merchant,
+      // Just the one for now? Or keep as array?
+      recipient: this.email,
+      slots: [],
+    };
+
+    availableSlotsArray.forEach((slot) => {
+      const desiredPattern = 'dddd, Do MMM';
+      const parsePattern = 'dddd Do MMM YYYY h:mma';
+      const slotSplit = slot.split(', ');
+      const dateString = slotSplit[0];
+      const timeSlot = slotSplit[1].replace('between ', '');
+      const start = timeSlot.split(' - ')[0];
+      const end = timeSlot.split(' - ')[1];
+      // We sort by this.
+      const date = moment(`${dateString} ${start}`, parsePattern);
+      const formattedDate = date.format(desiredPattern);
+      const price = slotSplit[2].replace('available for ', '');
+
+      if (!dateString || !timeSlot || !price) {
+        throw new Error('Could not extract all data required to notify user');
+      } else {
+        slotsObj.slots.push({ date, formattedDate, start, end, price });
+        this.availabilityVerified = true;
+      }
+    });
+
+    if (this.availabilityVerified === true) {
+      // Sort by time and date. Date is a moment object.
+      slotsObj.slots = slotsObj.slots.sort(
+        (a, b) => a.date.unix() - b.date.unix()
+      );
+    }
+
+    return slotsObj;
+  }
+}
 
 module.exports = {
-  emailAvailableSlots,
+  SainsburysDelivery,
 };
 
 // Navigate to sainsburys
