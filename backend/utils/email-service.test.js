@@ -150,101 +150,59 @@ describe('emailService', () => {
       });
     });
 
-    describe('process.env.PERSONAL_EMAIL = "kane@test.com"', () => {
-      beforeEach(() => {
-        jest.resetModules();
-        process.env = {
-          ...defaultEnv,
-          PERSONAL_EMAIL: 'kane@test.com',
-          SENDGRID_API_KEY: 'test-api-key'
-        };
-      });
-
-      afterEach(() => {
-        process.env = defaultEnv;
-      });
-
-      test('Returns a 400 Bad Request if no data is passed', async () => {
-        const response = await emailService.send();
-        expect(response.statusCode).toBe(400);
-      });
-
-      test('Returns a 400 Bad Request if empty object is passed', async () => {
-        const response = await emailService.send({});
-        expect(response.statusCode).toBe(400);
-      });
-
-      test('Returns a 400 Bad Request if merchant is not passed', async () => {
-        const response = await emailService.send({ merchant: undefined, slots: [{}], addresses: ['address@email.com'] });
-        expect(response.statusCode).toBe(400);
-      });
-
-      test('Returns a 400 Bad Request if slots is not passed', async () => {
-        const response = await emailService.send({ merchant: 'amazon', slots: undefined, addresses: ['address@email.com'] });
-        expect(response.statusCode).toBe(400);
-      });
-      
-      test('Returns a 400 Bad Request if addresses is not passed', async () => {
-        const response = await emailService.send({ merchant: 'amazon', slots: [{}], addresses: undefined });
-        expect(response.statusCode).toBe(400);
-      });
-
-      test('Returns a 200 OK if all required args are passed', async () => {
-        const now = new Date;
-        const slots = [
-          {
-            date: now,
-            start: now,
-            end: addMinutes(now, 30),
-            price: '£1.00'
-          }
-        ];
-
-        axios.mockImplementationOnce(() => Promise.resolve({}));
-        const response = await emailService.send({ merchant: 'amazon', slots, addresses: ['address@email.com'], url: 'https://google.com' });
-
-        expect(axios).toHaveBeenCalled();
-        expect(response.statusCode).toBe(200);
-      });
+    beforeEach(() => {
+      jest.resetModules();
+      process.env = {
+        ...defaultEnv,
+        SENDGRID_API_KEY: 'test-api-key'
+      };
     });
 
-    describe('process.env.PERSONAL_EMAIL is undefined', () => {
-      beforeEach(() => {
-        jest.resetModules();
-        process.env = {
-          ...defaultEnv,
-          SENDGRID_API_KEY: 'test-api-key'
-        };
-      });
+    afterEach(() => {
+      process.env = defaultEnv;
+    });
 
-      afterEach(() => {
-        process.env = defaultEnv;
-      });
+    test('Returns a 400 Bad Request if no data is passed', async () => {
+      const response = await emailService.send();
+      expect(response.statusCode).toBe(400);
+    });
 
-      test('Returns a 400 Bad Request if no addresses are found', async () => {
-        const response = await emailService.send({ merchant: 'amazon', slots: [{}] });
-        expect(response.statusCode).toBe(400);
-      });
+    test('Returns a 400 Bad Request if empty object is passed', async () => {
+      const response = await emailService.send({});
+      expect(response.statusCode).toBe(400);
+    });
 
-      test('Returns a 200 OK if addresses are found', async () => {
-        const merchant = 'asda';
-        const addresses = ['nice_guy_curtis@test.com', 'nicer_guy_karan@test.com' ];
-        const now = new Date;
-        const slots = [
-          {
-            date: now,
-            start: now,
-            end: addMinutes(now, 30),
-            price: '£1.00'
-          }
-        ];
+    test('Returns a 400 Bad Request if merchant is not passed', async () => {
+      const response = await emailService.send({ merchant: undefined, slots: [{}], addresses: ['address@email.com'] });
+      expect(response.statusCode).toBe(400);
+    });
 
-        axios.mockImplementationOnce(() => Promise.resolve({}));
-        const response = await emailService.send({ merchant, slots, addresses, url: 'https://google.com' });
+    test('Returns a 400 Bad Request if slots is not passed', async () => {
+      const response = await emailService.send({ merchant: 'amazon', slots: undefined, addresses: ['address@email.com'] });
+      expect(response.statusCode).toBe(400);
+    });
 
-        expect(axios).toHaveBeenCalled();
-        expect(response.statusCode).toBe(200);
-      });
+    test('Returns a 400 Bad Request if addresses is not passed', async () => {
+      const response = await emailService.send({ merchant: 'amazon', slots: [{}], addresses: undefined });
+      expect(response.statusCode).toBe(400);
+    });
+
+    test('Returns a 200 OK if all required args are passed', async () => {
+      const now = new Date;
+      const slots = [
+        {
+          date: now,
+          start: now,
+          end: addMinutes(now, 30),
+          price: '£1.00'
+        }
+      ];
+
+      axios.mockImplementationOnce(() => Promise.resolve({}));
+      const response = await emailService.send({ merchant: 'amazon', slots, addresses: ['address@email.com'], url: 'https://google.com' });
+
+      expect(axios).toHaveBeenCalled();
+      expect(response.statusCode).toBe(200);
     });
   });
 
