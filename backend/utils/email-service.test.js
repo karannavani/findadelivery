@@ -110,6 +110,7 @@ describe('emailService', () => {
       };
 
       const returnedObj = emailService.build(merchant, slots, addresses, url);
+      expect(returnedObj.personalizations[0].dynamic_template_data.slots.length).toEqual(5); // Super-clear check for Karan ;)
       expect(returnedObj).toEqual(expectedObj);
     });
   });
