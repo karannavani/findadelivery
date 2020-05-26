@@ -49,39 +49,21 @@ const buildSgPayload = (merchant, slots, addresses, url) => {
   return sgPayload;
 }
 
-const defineAddresses = (addresses) => {
-  const primaryAddress = process.env.PERSONAL_EMAIL;
-
-  if (!primaryAddress && !addresses) throw { statusCode: 400, message: 'No recipient(s) found.' };
-  if (!primaryAddress) {
-    return addresses;
-  } else if (!addresses) {
-    return [primaryAddress];
-  } else {
-    return [primaryAddress, ...addresses];
-  }
-};
-
 const sendEmail = async (data) => {
   // TODO: Build logger for debugging/testing
   try {
     if (!data) throw { statusCode: 400, message: 'No data passed.' };
 
     console.log('Checking parameters...');
-    const requiredArgs = ['merchant', 'slots', 'url'];
+    const requiredArgs = ['merchant', 'slots', 'addresses', 'url'];
     requiredArgs.forEach((arg) => {
       // console.log(`Checking data[${arg}] contains data...`);
       if (data[arg] === undefined || data[arg] === null) throw { statusCode: 400, message: 'Required argument missing: ' + arg }
     });
-
     console.log('Finished checking parameters.');
-    const { merchant, slots, url } = data;
-    console.log('Looking for addresses...');
-    const addresses = defineAddresses(data.addresses);
-    console.log('Addresses found:', addresses);
 
-    // TODO: Extract the "build" function into a separate function
-    const sgPayload = buildSgPayload(merchant, slots, addresses, url);
+    const { merchant, slots, url, addresses } = data;
+    const sgPayload = buildSgPayload(merchant, slots, addresses, url); // TODO: Extract the "build" function into a separate function
     await axios({
       method: 'post',
       url: 'https://api.sendgrid.com/v3/mail/send',

@@ -113,6 +113,33 @@ describe('emailService', () => {
       expect(returnedObj.personalizations[0].dynamic_template_data.slots.length).toEqual(5); // Super-clear check for Karan ;)
       expect(returnedObj).toEqual(expectedObj);
     });
+
+    test('returns 3 slots if there are 3 slots available', () => {
+      const now = new Date();
+      const merchant = 'asda';
+      const url = 'https://google.com';
+      const addresses = ['lincoln.kaneadam@gmail.com', 'kane.lincoln@icloud.com'];
+      const slots = [ // 9 slots here.
+        { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
+        { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' },
+        { date: now, start: now, end: addMinutes(now, 30), price: '£1.50' }
+      ];
+
+      const personalization1 = generateTestPersonalisation({ now, merchant: 'Asda', numOfSlots: 3, address: addresses[0], url, showMore: false });
+      const personalization2 = generateTestPersonalisation({ now, merchant: 'Asda', numOfSlots: 3, address: addresses[1], url, showMore: false });
+      const expectedObj = {
+        from: { email: 'noreply@findadelivery.com' },
+        template_id:'d-ae627fe97d3c43209c1608fb43dfe7f0',
+        personalizations: [
+          personalization1,
+          personalization2
+        ] 
+      };
+
+      const returnedObj = emailService.build(merchant, slots, addresses, url);
+      expect(returnedObj.personalizations[0].dynamic_template_data.slots.length).toEqual(3); // Super-clear check for Karan ;)
+      expect(returnedObj).toEqual(expectedObj);
+    });
   });
 
   describe('.send()', () => {
@@ -148,12 +175,17 @@ describe('emailService', () => {
       });
 
       test('Returns a 400 Bad Request if merchant is not passed', async () => {
-        const response = await emailService.send({ merchant: undefined, slots: [{}] });
+        const response = await emailService.send({ merchant: undefined, slots: [{}], addresses: ['address@email.com'] });
         expect(response.statusCode).toBe(400);
       });
 
       test('Returns a 400 Bad Request if slots is not passed', async () => {
-        const response = await emailService.send({ merchant: 'amazon', slots: undefined });
+        const response = await emailService.send({ merchant: 'amazon', slots: undefined, addresses: ['address@email.com'] });
+        expect(response.statusCode).toBe(400);
+      });
+      
+      test('Returns a 400 Bad Request if addresses is not passed', async () => {
+        const response = await emailService.send({ merchant: 'amazon', slots: [{}], addresses: undefined });
         expect(response.statusCode).toBe(400);
       });
 
@@ -169,7 +201,7 @@ describe('emailService', () => {
         ];
 
         axios.mockImplementationOnce(() => Promise.resolve({}));
-        const response = await emailService.send({ merchant: 'amazon', slots, url: 'https://google.com' });
+        const response = await emailService.send({ merchant: 'amazon', slots, addresses: ['address@email.com'], url: 'https://google.com' });
 
         expect(axios).toHaveBeenCalled();
         expect(response.statusCode).toBe(200);
