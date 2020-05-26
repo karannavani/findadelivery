@@ -10,7 +10,6 @@ const formatSlotData = (slots, numOfSlotsToFormat) => {
 
   for (let i = 0; i < numOfSlotsToFormat; i++) {
     const formattedSlot = {};
-
     // If either of you can think of a nicer way to do this, let me know. I
     // don't like the aesthetic.
     formattedSlot.formattedDate = format(slots[i].start, 'EEEE, do LLLL');
