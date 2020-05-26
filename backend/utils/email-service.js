@@ -5,10 +5,10 @@ const format = require('date-fns/format');
 const util = require('util');
 const supermarkets = require('../supermarkets');
 
-const formatSlotData = (slots, maxSlotsPerEmail) => {
+const formatSlotData = (slots, numOfSlotsToFormat) => {
   const formattedSlots = [];
 
-  for (let i = 0; i < maxSlotsPerEmail; i++) {
+  for (let i = 0; i < numOfSlotsToFormat; i++) {
     const formattedSlot = {};
 
     // If either of you can think of a nicer way to do this, let me know. I
@@ -24,12 +24,13 @@ const formatSlotData = (slots, maxSlotsPerEmail) => {
 }
 
 const buildSgPersonalization = (merchant, slots, address, url) => {
-  const maxSlotsPerEmail = slots.length > 5 ? 5 : slots.length;
+  const maxSlotsPerEmail = 5; 
+  const numOfSlotsToFormat = slots.length > maxSlotsPerEmail ? maxSlotsPerEmail : slots.length;
   const dynamicTemplateData = {
     'btn-link': url,
     more: slots.length > maxSlotsPerEmail ? true : false,
     merchant: supermarkets[merchant],
-    slots: formatSlotData(slots, maxSlotsPerEmail)
+    slots: formatSlotData(slots, numOfSlotsToFormat)
   };
   const personalization = {
     to: [{ email: address }],
@@ -80,6 +81,7 @@ const sendEmail = async (data) => {
     const addresses = defineAddresses(data.addresses);
     console.log('Addresses found:', addresses);
 
+    // TODO: Extract the "build" function into a separate function
     const sgPayload = buildSgPayload(merchant, slots, addresses, url);
     await axios({
       method: 'post',
