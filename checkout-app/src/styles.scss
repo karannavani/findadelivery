@@ -1,15 +1,15 @@
 /* You can add global styles to this file, and also import other style files */
-@import "./assets/webfonts/sinkinsans_400regular/stylesheet.css";
+@import './assets/webfonts/sinkinsans_400regular/stylesheet.css';
 
 // Fonts
 @font-face {
   font-family: 'Roboto';
-  src: url('assets/webfonts/roboto/Roboto-Regular.ttf')
+  src: url('assets/webfonts/roboto/Roboto-Regular.ttf');
 }
 
 @font-face {
   font-family: 'Roboto Bold';
-  src: url('assets/webfonts/roboto/Roboto-Bold.ttf')
+  src: url('assets/webfonts/roboto/Roboto-Bold.ttf');
 }
 
 html {
@@ -28,7 +28,11 @@ body {
   margin-bottom: 180px;
 }
 
-h1, h2, h3, h4, h5 {
+h1,
+h2,
+h3,
+h4,
+h5 {
   font-family: 'Roboto Bold';
   // color: #2f13cd;
 }
@@ -44,6 +48,7 @@ h5 {
 
 .container {
   margin-top: 60px;
+  padding: 0 50px;
 }
 
 span {
@@ -74,20 +79,22 @@ span {
 }
 
 .btn-primary {
-  background-color: #00785F; 
+  background-color: #00785f;
 
-  &:hover, &:active {
+  &:hover,
+  &:active {
     background-color: #045746;
   }
 }
 
 .btn-secondary {
-  color: #002B22;
-  background-color: #B6E5CE;
+  color: #002b22;
+  background-color: #b6e5ce;
 
-  &:hover, &:active {
-    color: #002B22;
-    background-color: #A0D2BA;
+  &:hover,
+  &:active {
+    color: #002b22;
+    background-color: #a0d2ba;
   }
 }
 
@@ -109,7 +116,7 @@ span {
 }
 
 #asdaWrapper {
-  background-image: url("./assets/supermarkets/Asda_logo.svg.png");
+  background-image: url('./assets/supermarkets/Asda_logo.svg.png');
   background-position: center;
   background-size: contain;
   background-repeat: no-repeat;

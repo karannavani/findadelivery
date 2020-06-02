@@ -1,66 +1,118 @@
 <div class="container">
   <div class="row">
-    <div class="col-sm">
-      <h1>Get notified when home delivery slots become available at
-        supermarkets</h1>
+    <div class="col-12 col-lg-6">
+      <h1>
+        Get notified when home delivery slots become available at supermarkets
+      </h1>
 
-      <p>COVID-19 has made it difficult to shop for groceries and online
-      delivery slots are hard to find.</p>
+      <p>
+        COVID-19 has made it difficult to shop for groceries and online delivery
+        slots are hard to find.
+      </p>
 
-      <p>Our service automatically monitors the availabilty of home delivery
-      slots at many of the UK's leading supermarkets and notifies you once a
-      slot becomes available.</p>
+      <p>
+        Our service automatically monitors the availabilty of home delivery
+        slots at many of the UK's leading supermarkets and notifies you once a
+        slot becomes available.
+      </p>
 
-      <p>This is completely free for all key workers and vulnerable people to
-      support them in these challenging times.</p>
-
-      <div id="btn-container">
-        <button (click)="onClickRegister()" class="btn btn-primary mr-3">Request access</button>
-        <button (click)="onClickSignIn()" routerLink="/login" class="btn btn-secondary">I already have access</button>
-      </div>
+      <p>
+        This is completely free for all key workers and vulnerable people to
+        support them in these challenging times.
+      </p>
     </div>
 
-    <div class="col-sm text-right">
-      <img src="assets/home/basket.png" id="basket-of-groceries" alt="Basket of groceries" />
+    <div class="col-12 col-lg-6 text-center text-lg-right">
+      <img
+        src="assets/home/basket.png"
+        id="basket-of-groceries"
+        alt="Basket of groceries"
+      />
+    </div>
+  </div>
+
+  <div class="row">
+    <div
+      class="col-12 col-lg-6 d-flex justify-content-center text-center text-sm-center justify-content-lg-start text-lg-left"
+    >
+      <div class="row">
+        <div class="col-12 col-lg-auto">
+          <button
+            (click)="onClickRegister()"
+            class="btn btn-primary mt-3 mr-lg-3 w-100"
+          >
+            Request access
+          </button>
+        </div>
+
+        <div class="col-12 col-lg-auto">
+          <button
+            (click)="onClickSignIn()"
+            routerLink="/login"
+            class="btn btn-secondary mt-3 w-100"
+          >
+            I already have access
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
-
 
 <div class="container-fluid" id="section-hiw">
   <div class="container how-it-works">
     <h2>How it works</h2>
 
     <div class="row">
-      <div class="col text-center"> 
-        <img src="assets/home/how-it-works-1.png" class="hiw-img" id="hiw-img-1" alt="Step 1. Choose" />
+      <div class="col text-center">
+        <img
+          src="assets/home/how-it-works-1.png"
+          class="hiw-img"
+          id="hiw-img-1"
+          alt="Step 1. Choose"
+        />
         <p>Log in and select the supermarket you want a slot for.</p>
       </div>
 
-      <div class="col text-center"> 
-        <img src="assets/home/how-it-works-2.png" class="hiw-img" id="hiw-img-2" alt="Step 2. Search" />
-        <p>Once you’ve made your selection, we’ll search for available delivery
-        slots.</p>
+      <div class="col text-center">
+        <img
+          src="assets/home/how-it-works-2.png"
+          class="hiw-img"
+          id="hiw-img-2"
+          alt="Step 2. Search"
+        />
+        <p>
+          Once you’ve made your selection, we’ll search for available delivery
+          slots.
+        </p>
       </div>
 
-      <div class="col text-center"> 
-        <img src="assets/home/how-it-works-3.png" class="hiw-img" id="hiw-img-3" alt="Step 3. Book" />
-        <p>When we find an available delivery slot, we will automatically notify
-        you.</p>
+      <div class="col text-center">
+        <img
+          src="assets/home/how-it-works-3.png"
+          class="hiw-img"
+          id="hiw-img-3"
+          alt="Step 3. Book"
+        />
+        <p>
+          When we find an available delivery slot, we will automatically notify
+          you.
+        </p>
       </div>
     </div>
   </div>
 </div>
 
-
 <div class="container" id="section-contact">
   <div class="row">
     <div class="col">
       <h2>Are you a key worker?</h2>
-      <p>Key workers are people whose jobs are critical to the health of the
-      nation during the COVID-19 pandemic and public lockdown. The UK Government
-      is keen to ensure that they can continue to carry out their jobs with as
-      little restriction as possible. These include:</p>
+      <p>
+        Key workers are people whose jobs are critical to the health of the
+        nation during the COVID-19 pandemic and public lockdown. The UK
+        Government is keen to ensure that they can continue to carry out their
+        jobs with as little restriction as possible. These include:
+      </p>
 
       <ul>
         <li>Health and social care workers</li>
@@ -74,8 +126,10 @@
 
     <div class="col">
       <h2>Contact us</h2>
-      <p>If you would like more information or want to contact us for any other
-      reason, you can reach us at <span>support@findadelivery.com</span>.
+      <p>
+        If you would like more information or want to contact us for any other
+        reason, you can reach us at <span>support@findadelivery.com</span>.
+      </p>
     </div>
   </div>
 </div>
