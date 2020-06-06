@@ -23,18 +23,23 @@ export class HeaderComponent implements OnInit {
 
   goToNextPage(buttonName: string): void {
     const homeRoute = '/home';
-    const targetIds = { howItWorks: '#section-hiw', getInTouch: '#section-contact' };
+    const targetIds = {
+      howItWorks: '#section-hiw',
+      getInTouch: '#section-contact',
+      keyWorker: '#section-key-worker',
+    };
     const currentlyOnHome = this.router.url.includes(homeRoute);
     const argsForScrollService = {
       duration: 300,
       document: this.document,
       scrollTarget: targetIds[buttonName],
-      scrollOffset: buttonName === 'getInTouch' ? 60 : 0
+      scrollOffset: buttonName === 'getInTouch' ? 60 : 0,
     };
 
     // Either navigate and scroll or just scroll
     if (!currentlyOnHome) {
-      this.router.navigate([homeRoute])
+      this.router
+        .navigate([homeRoute])
         .then(() => this.pageScrollService.scroll(argsForScrollService));
     } else {
       this.pageScrollService.scroll(argsForScrollService);
