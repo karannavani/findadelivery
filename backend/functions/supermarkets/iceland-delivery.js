@@ -218,12 +218,15 @@ class IcelandDelivery {
       });
     });
 
-    if (this.availabilityVerified === true) {
-      // Sort by time and date. Date is a moment object.
-      slotsObj.slots = slotsObj.slots.sort(
-        (a, b) => a.date.unix() - b.date.unix()
-      );
-    }
+    // K.N – Commenting this out unless we can get it to work properly. The sort isn't actually sorting by time, it seems to be jumbled.
+    // I have not investigated this as commenting this out makes it work fine.The slots in availableSlotsObj are sorted chronlogically already.
+
+    // if (this.availabilityVerified === true) {
+    //   // Sort by time and date. Date is a moment object.
+    //   slotsObj.slots = slotsObj.slots.sort(
+    //     (a, b) => a.date.unix() - b.date.unix()
+    //   );
+    // }
 
     return slotsObj;
   }
