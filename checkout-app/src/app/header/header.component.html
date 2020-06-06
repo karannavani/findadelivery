@@ -21,22 +21,16 @@
       id="navbarNavAltMarkup"
     >
       <div class="navbar-nav" *ngIf="!(isAuthenticated$ | async)">
-        <a
-          class="nav-item nav-link active px-3"
-          (click)="goToNextPage('howItWorks')"
+        <a class="nav-item nav-link px-3" (click)="goToNextPage('howItWorks')"
           >How it works</a
         >
-        <a
-          class="nav-item nav-link active px-3"
-          (click)="goToNextPage('keyWorker')"
+        <a class="nav-item nav-link px-3" (click)="goToNextPage('keyWorker')"
           >Who is a key worker?</a
         >
-        <a
-          class="nav-item nav-link active px-3"
-          (click)="goToNextPage('getInTouch')"
+        <a class="nav-item nav-link px-3" (click)="goToNextPage('getInTouch')"
           >Get in touch</a
         >
-        <a class="nav-item nav-link active px-3" routerLink="/login">Sign in</a>
+        <a class="nav-item nav-link px-3" routerLink="/login">Sign in</a>
       </div>
 
       <div *ngIf="isAuthenticated$ | async" class="navbar-nav">
