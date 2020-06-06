@@ -10,7 +10,7 @@ const db = admin
       credential: admin.credential.cert(serviceAccount),
       databaseURL: 'https://checkout-app-uk.firebaseio.com',
     },
-    "Sainsbury's Delivery"
+    'Iceland Delivery'
   )
   .firestore();
 
@@ -180,24 +180,6 @@ class IcelandDelivery {
 
     return availableSlotsObj;
   }
-
-  // To be replaced
-  // sendEmail = (slots) => {
-  //   console.log(process.env.PERSONAL_EMAIL);
-  //   const msg = {
-  //     to: process.env.PERSONAL_EMAIL,
-  //     from: 'findadelivery@example.com',
-  //     subject: `Find a delivery - Sainsburys delivery slot${
-  //       slots.length > 1 ? 's' : ''
-  //     } available`,
-  //     text: `Here are the available slots we've found for your postcode:
-
-  //     ${slots.join('\n\n')}
-  //   `,
-  //   };
-  //   console.log('sending email');
-  //   sgMail.send(msg);
-  // };
 
   // Transform function
   /**

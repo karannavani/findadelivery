@@ -1,6 +1,7 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const { AsdaDelivery } = require('./supermarkets/asda-delivery');
+const { IcelandDelivery } = require('./supermarkets/iceland-delivery');
 admin.initializeApp();
 const db = admin.firestore();
 
@@ -87,6 +88,10 @@ const workers = {
     console.log('hit asda worker with', postcode, email, docId);
     new AsdaDelivery(postcode, email, docId);
   },
+  icelandDeliveryScan: async (postcode, email, docId) => {
+    console.log('hit iceland worker with', postcode, email, docId);
+    new IcelandDelivery(postcode, email, docId);
+  },
 };
 
 const updatePerformAt = (snapshot) => {
@@ -100,6 +105,7 @@ module.exports = {
   taskRunner,
   checkPerformAt,
   AsdaDelivery,
+  IcelandDelivery,
   onJobScheduled,
   onJobActive,
   updatePerformAt,
