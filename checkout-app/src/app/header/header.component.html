@@ -12,19 +12,39 @@
       aria-controls="navbarNavAltMarkup"
       aria-expanded="false"
       aria-label="Toggle navigation"
-      >
+    >
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <div class="collapse navbar-collapse justify-content-end" id="navbarNavAltMarkup">
+    <div
+      class="collapse navbar-collapse justify-content-end"
+      id="navbarNavAltMarkup"
+    >
       <div class="navbar-nav" *ngIf="!(isAuthenticated$ | async)">
-        <a class="nav-item px-4 nav-link active d-lg-none" routerLink="/login">Sign in</a>
-        <a class="nav-item px-4 nav-link active" (click)="goToNextPage('howItWorks')">How it works</a>
-        <a class="nav-item px-4 nav-link active" (click)="goToNextPage('getInTouch')">Get in touch</a>
+        <a class="nav-item px-4 nav-link active d-lg-none" routerLink="/login"
+          >Sign in</a
+        >
+        <a
+          class="nav-item px-4 nav-link active"
+          (click)="goToNextPage('howItWorks')"
+          >How it works</a
+        >
+        <a
+          class="nav-item px-4 nav-link active"
+          (click)="goToNextPage('keyWorker')"
+          >Who is a key worker?</a
+        >
+        <a
+          class="nav-item px-4 nav-link active"
+          (click)="goToNextPage('getInTouch')"
+          >Get in touch</a
+        >
       </div>
 
       <div *ngIf="isAuthenticated$ | async" class="navbar-nav">
-        <a class="nav-item nav-link" routerLink="" (click)="signOut()">Sign out</a>
+        <a class="nav-item nav-link" routerLink="" (click)="signOut()"
+          >Sign out</a
+        >
       </div>
     </div>
   </div>
