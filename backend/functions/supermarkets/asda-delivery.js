@@ -1,15 +1,15 @@
-const axios = require("axios");
-const sgMail = require("@sendgrid/mail");
-const functions = require("firebase-functions");
-const admin = require("firebase-admin");
-const serviceAccount = require("../checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json");
+const axios = require('axios');
+const sgMail = require('@sendgrid/mail');
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+const serviceAccount = require('../checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json');
 const db = admin
   .initializeApp(
     {
       credential: admin.credential.cert(serviceAccount),
-      databaseURL: "https://checkout-app-uk.firebaseio.com",
+      databaseURL: 'https://checkout-app-uk.firebaseio.com',
     },
-    "Asda Delivery"
+    'Asda Delivery'
   )
   .firestore();
 
@@ -25,29 +25,29 @@ class AsdaDelivery {
   }
 
   async checkAsda(postcode) {
-    console.log("running asda", postcode);
+    console.log('running asda', postcode);
     const start_date = new Date();
     let end_date = new Date(start_date);
     // setting end date to be one month from the current date
     end_date.setMonth(start_date.getMonth() + 1);
     // adding the ASDA request headers
-    const requestorigin = "gi";
+    const requestorigin = 'gi';
     const data = {
       service_info: {
-        fulfillment_type: "DELIVERY",
+        fulfillment_type: 'DELIVERY',
         enable_express: false,
       },
       start_date,
       end_date,
-      reserved_slot_id: "",
+      reserved_slot_id: '',
       service_address: {
         postcode,
       },
       customer_info: {
-        account_id: "8774316050",
+        account_id: '8774316050',
       },
       order_info: {
-        order_id: "20027220446",
+        order_id: '20027220446',
         restricted_item_types: [],
         volume: 0,
         weight: 0,
@@ -58,9 +58,9 @@ class AsdaDelivery {
     };
 
     try {
-      console.log("Making call...");
+      console.log('Making call...');
       const res = await axios.post(
-        "https://groceries.asda.com/api/v3/slot/view",
+        'https://groceries.asda.com/api/v3/slot/view',
         {
           requestorigin,
           data,
@@ -75,14 +75,14 @@ class AsdaDelivery {
 
   async getSlots({ slot_days }) {
     // If there are no slot days, do nothing.
-    console.log("get slots called with");
+    console.log('get slots called with');
     if (!slot_days) return;
 
     // Otherwise...
     slot_days.forEach((day) =>
       day.slots.forEach(async (slot) => {
         if (
-          slot.slot_info.status !== "UNAVAILABLE" &&
+          slot.slot_info.status !== 'UNAVAILABLE' &&
           !this.availabilityVerified
         ) {
           const startTime = new Date(slot.slot_info.start_time);
@@ -92,7 +92,7 @@ class AsdaDelivery {
           await this.sendEmail(startTime, endTime);
 
           // Update doc with new state
-          await db.doc(`jobs/${this.docId}`).update({ state: "Completed" });
+          await db.doc(`jobs/${this.docId}`).update({ state: 'Completed' });
         }
       })
     );
@@ -101,13 +101,13 @@ class AsdaDelivery {
   async sendEmail(startTime, endTime) {
     const msg = {
       to: this.email,
-      from: "noreply@findadelivery.com",
-      subject: "ASDA DELIVERY SLOT AVAILABLE",
+      from: 'noreply@findadelivery.com',
+      subject: 'ASDA DELIVERY SLOT AVAILABLE',
       text: `A delivery slot has become available for ${startTime.toDateString()}, ${startTime.getUTCHours()}:${startTime.getUTCMinutes()}0 - ${endTime.getUTCHours()}:${endTime.getUTCMinutes()}0
 
     Book your slot - https://groceries.asda.com/checkout/book-slot?tab=deliver&origin=/`,
     };
-    console.log("sending email");
+    console.log('sending email');
     await sgMail.send(msg);
 
     return;
