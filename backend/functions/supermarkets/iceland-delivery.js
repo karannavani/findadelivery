@@ -49,12 +49,11 @@ class IcelandDelivery {
 
       if (this.availabilityVerified) {
         // Complete job and remove
-        // await db.doc(`jobs/${this.docId}`).update({ state: 'Completed' });
+        await db.doc(`jobs/${this.docId}`).update({ state: 'Completed' });
         send(this.slots);
-        // sendEmail(this.slots);
         console.log(this.slots);
       } else {
-        console.log('Not slots currently available');
+        console.log('No slots currently available');
       }
     } catch (error) {
       console.log(error);

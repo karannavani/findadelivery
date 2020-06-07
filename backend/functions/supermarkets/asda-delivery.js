@@ -1,8 +1,11 @@
 const axios = require('axios');
+const moment = require('moment');
 const sgMail = require('@sendgrid/mail');
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const serviceAccount = require('../checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json');
+const { send } = require('../utils/email-service');
+
 const db = admin
   .initializeApp(
     {
@@ -17,15 +20,16 @@ sgMail.setApiKey(functions.config().sendgrid.api_key);
 
 class AsdaDelivery {
   constructor(postcode, email, docId) {
+    this.merchant = 'Asda';
     this.postcode = postcode;
     this.email = email;
     this.docId = docId;
     this.availabilityVerified = false;
-    this.checkAsda(postcode);
+    this.checkAsda();
   }
 
-  async checkAsda(postcode) {
-    console.log('running asda', postcode);
+  async checkAsda() {
+    console.log('running asda', this.postcode);
     const start_date = new Date();
     let end_date = new Date(start_date);
     // setting end date to be one month from the current date
@@ -41,7 +45,7 @@ class AsdaDelivery {
       end_date,
       reserved_slot_id: '',
       service_address: {
-        postcode,
+        postcode: this.postcode,
       },
       customer_info: {
         account_id: '8774316050',
@@ -74,43 +78,61 @@ class AsdaDelivery {
   }
 
   async getSlots({ slot_days }) {
+    const availableSlotsArray = [];
     // If there are no slot days, do nothing.
-    console.log('get slots called with');
     if (!slot_days) return;
 
     // Otherwise...
-    slot_days.forEach((day) =>
+    await slot_days.forEach((day) =>
       day.slots.forEach(async (slot) => {
-        if (
-          slot.slot_info.status !== 'UNAVAILABLE' &&
-          !this.availabilityVerified
-        ) {
-          const startTime = new Date(slot.slot_info.start_time);
-          const endTime = new Date(slot.slot_info.end_time);
-          this.availabilityVerified = true; // this is the toggle that prevents more slots from being sent as separate emails
-
-          await this.sendEmail(startTime, endTime);
-
-          // Update doc with new state
-          await db.doc(`jobs/${this.docId}`).update({ state: 'Completed' });
+        if (slot.slot_info.status !== 'UNAVAILABLE') {
+          const start = new Date(slot.slot_info.start_time);
+          const end = new Date(slot.slot_info.end_time);
+          const price = slot.slot_info.final_slot_price;
+          availableSlotsArray.push({ start, end, price });
         }
       })
     );
+    if (availableSlotsArray.length) {
+      this.returnFormattedSlots(availableSlotsArray);
+      this.availabilityVerified = true;
+    }
   }
 
-  async sendEmail(startTime, endTime) {
-    const msg = {
-      to: this.email,
-      from: 'noreply@findadelivery.com',
-      subject: 'ASDA DELIVERY SLOT AVAILABLE',
-      text: `A delivery slot has become available for ${startTime.toDateString()}, ${startTime.getUTCHours()}:${startTime.getUTCMinutes()}0 - ${endTime.getUTCHours()}:${endTime.getUTCMinutes()}0
-
-    Book your slot - https://groceries.asda.com/checkout/book-slot?tab=deliver&origin=/`,
+  async returnFormattedSlots(availableSlotsArray) {
+    const slotsObj = {
+      url: 'https://groceries.asda.com/checkout/book-slot?tab=deliver&origin=/',
+      merchant: this.merchant,
+      addresses: [this.email],
+      slots: [],
     };
-    console.log('sending email');
-    await sgMail.send(msg);
 
-    return;
+    await availableSlotsArray.forEach((slot) => {
+      const desiredPattern = 'dddd, Do MMM';
+      const slotTimePattern = 'h:mm a';
+      const start = moment(slot.start).format(slotTimePattern).replace(' ', '');
+      const end = moment(slot.end).format(slotTimePattern).replace(' ', '');
+      const formattedDate = moment(slot.start).format(desiredPattern);
+      const price = `£${slot.price}`;
+
+      if (!start || !end || !formattedDate) {
+        throw new Error('Could not extract all data required to notify user');
+      } else {
+        slotsObj.slots.push({ formattedDate, start, end, price });
+      }
+    });
+
+    return this.completeSearch(slotsObj);
+  }
+
+  async completeSearch(slots) {
+    if (this.availabilityVerified) {
+      send(slots);
+      await db.doc(`jobs/${this.docId}`).update({ state: 'Completed' });
+      console.log('slots are', slots);
+    } else {
+      console.log('No slots currently available');
+    }
   }
 }
 
