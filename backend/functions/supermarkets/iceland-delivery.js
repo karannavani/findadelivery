@@ -4,13 +4,14 @@ const sgMail = require('@sendgrid/mail');
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const serviceAccount = require('../checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json');
+const { send } = require('../utils/email-service');
 const db = admin
   .initializeApp(
     {
       credential: admin.credential.cert(serviceAccount),
       databaseURL: 'https://checkout-app-uk.firebaseio.com',
     },
-    "Sainsbury's Delivery"
+    'Iceland Delivery'
   )
   .firestore();
 
@@ -48,11 +49,11 @@ class IcelandDelivery {
 
       if (this.availabilityVerified) {
         // Complete job and remove
-        // await db.doc(`jobs/${this.docId}`).update({ state: 'Completed' });
-        // sendEmail(this.slots);
+        await db.doc(`jobs/${this.docId}`).update({ state: 'Completed' });
+        send(this.slots);
         console.log(this.slots);
       } else {
-        console.log('Not slots currently available');
+        console.log('No slots currently available');
       }
     } catch (error) {
       console.log(error);
@@ -181,24 +182,6 @@ class IcelandDelivery {
     return availableSlotsObj;
   }
 
-  // To be replaced
-  // sendEmail = (slots) => {
-  //   console.log(process.env.PERSONAL_EMAIL);
-  //   const msg = {
-  //     to: process.env.PERSONAL_EMAIL,
-  //     from: 'findadelivery@example.com',
-  //     subject: `Find a delivery - Sainsburys delivery slot${
-  //       slots.length > 1 ? 's' : ''
-  //     } available`,
-  //     text: `Here are the available slots we've found for your postcode:
-
-  //     ${slots.join('\n\n')}
-  //   `,
-  //   };
-  //   console.log('sending email');
-  //   sgMail.send(msg);
-  // };
-
   // Transform function
   /**
    * @returns {object} - structured in accordance with sendMail function.
@@ -208,10 +191,9 @@ class IcelandDelivery {
     console.log(availableSlotsObj);
     // return {};
     const slotsObj = {
-      'btn-link': this.entryUrl,
+      url: this.entryUrl,
       merchant: this.merchant,
-      // Just the one for now? Or keep as array?
-      recipient: this.email,
+      addresses: [this.email],
       slots: [],
     };
 
@@ -235,12 +217,15 @@ class IcelandDelivery {
       });
     });
 
-    if (this.availabilityVerified === true) {
-      // Sort by time and date. Date is a moment object.
-      slotsObj.slots = slotsObj.slots.sort(
-        (a, b) => a.date.unix() - b.date.unix()
-      );
-    }
+    // K.N – Commenting this out unless we can get it to work properly. The sort isn't actually sorting by time, it seems to be jumbled.
+    // I have not investigated this as commenting this out makes it work fine.The slots in availableSlotsObj are sorted chronlogically already.
+
+    // if (this.availabilityVerified === true) {
+    //   // Sort by time and date. Date is a moment object.
+    //   slotsObj.slots = slotsObj.slots.sort(
+    //     (a, b) => a.date.unix() - b.date.unix()
+    //   );
+    // }
 
     return slotsObj;
   }
