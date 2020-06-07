@@ -3,6 +3,8 @@ const admin = require('firebase-admin');
 const { AsdaDelivery } = require('./supermarkets/asda-delivery');
 const { IcelandDelivery } = require('./supermarkets/iceland-delivery');
 const { SainsburysDelivery } = require('./supermarkets/sainsbury-delivery');
+const { send } = require('./utils/email-service');
+
 admin.initializeApp();
 const db = admin.firestore();
 
@@ -111,7 +113,9 @@ module.exports = {
   checkPerformAt,
   AsdaDelivery,
   IcelandDelivery,
+  SainsburysDelivery,
   onJobScheduled,
   onJobActive,
   updatePerformAt,
+  send,
 };
