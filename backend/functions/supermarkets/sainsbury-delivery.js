@@ -1,4 +1,5 @@
-const puppeteer = require('puppeteer');
+const chromium = require('chrome-aws-lambda');
+const puppeteer = require('puppeteer-core');
 const moment = require('moment');
 const sgMail = require('@sendgrid/mail');
 const functions = require('firebase-functions');
@@ -66,16 +67,25 @@ class SainsburysDelivery {
   async retrieveAvailableTimeSlots() {
     const { postcode, selectors, entryUrl } = this;
 
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath,
+      headless: chromium.headless,
+    });
 
     try {
       const page = await browser.newPage();
+      page.setDefaultNavigationTimeout(0);
+      page.setDefaulTimeout(0);
 
       // Debug - Allows for console.log to work in evaluate function
       // page.on('console', (consoleObj) => console.log(consoleObj.text()));
 
       // Open page 1
-      await page.goto(entryUrl, { waitUntil: 'networkidle2' });
+      await page.goto(entryUrl, {
+        waitUntil: 'networkidle2',
+      });
 
       // Populates postcode field and submits to navigate to next page
       await page.evaluate(this.submitPostcode, postcode, selectors);
@@ -103,6 +113,7 @@ class SainsburysDelivery {
       browser.close();
       return slots;
     } catch (error) {
+      console.log('oh no sainsburys');
       browser.close();
       throw error;
     }

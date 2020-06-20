@@ -1,10 +1,9 @@
 const puppeteer = require('puppeteer');
 const moment = require('moment');
-const sgMail = require('@sendgrid/mail');
-const functions = require('firebase-functions');
-const admin = require('firebase-admin');
-const serviceAccount = require('../checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json');
 const { send } = require('../utils/email-service');
+const serviceAccount = require('../checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json');
+const admin = require('firebase-admin');
+
 const db = admin
   .initializeApp(
     {
@@ -15,14 +14,13 @@ const db = admin
   )
   .firestore();
 
-sgMail.setApiKey(functions.config().sendgrid.api_key);
-
-class IcelandDelivery {
-  constructor(postcode, email, docId) {
+class IcelandRewrite {
+  constructor(postcode, email, docId, res) {
     this.merchant = 'Iceland';
     this.postcode = postcode;
     this.email = email;
     this.docId = docId;
+    this.res = res;
     this.availabilityVerified = false;
     this.slots = {};
     this.entryUrl = 'https://www.iceland.co.uk/book-delivery';
@@ -48,32 +46,33 @@ class IcelandDelivery {
       this.slots = await this.retrieveAvailableTimeSlots();
 
       if (this.availabilityVerified) {
-        // Complete job and remove
+        await send(this.slots);
         await db.doc(`jobs/${this.docId}`).update({ state: 'Completed' });
-        send(this.slots);
-        console.log(this.slots);
       } else {
         console.log('No slots currently available');
       }
     } catch (error) {
       console.log(error);
-      // TODO: Need to check which error and handle front end accordingly
     }
+
+    return this.res.status(200).end();
   }
 
   async retrieveAvailableTimeSlots() {
-    console.log('firing');
+    console.log('retrieving time slots from iceland');
     const { postcode, selectors, entryUrl } = this;
-    const browser = await puppeteer.launch();
+
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    });
 
     try {
       const page = await browser.newPage();
-
-      // Debug - Allows for console.log to work in evaluate function
-      // page.on('console', (consoleObj) => console.log(consoleObj.text()));
-
-      // Open deliver slots page
-      await page.goto(entryUrl, { waitUntil: 'networkidle2' });
+      await page.goto(entryUrl, {
+        waitUntil: 'load',
+        timeout: 0,
+      });
 
       // Populates postcode field
       await page.evaluate(this.enterPostcode, postcode, selectors);
@@ -85,7 +84,9 @@ class IcelandDelivery {
       await page.evaluate(this.submitPostcode, selectors);
 
       // // Step 2 loaded
-      await page.waitForNavigation({ waitUntil: 'networkidle2' });
+      await page.waitForNavigation({
+        waitUntil: 'networkidle2',
+      });
 
       // Extracts available slots from page
       const availableSlotsObj = await page.evaluate(
@@ -94,12 +95,17 @@ class IcelandDelivery {
       );
 
       const slots = this.returnFormattedSlots(availableSlotsObj);
+      console.log('slots are', slots);
 
-      // Finish up
-      browser.close();
+      // const htmlBody = await page.content();
+      // this.res.send(htmlBody);
+
+      await browser.close();
+
       return slots;
     } catch (error) {
-      browser.close();
+      console.log('oh no iceland puppeteer');
+      await browser.close();
       throw error;
     }
   }
@@ -232,10 +238,5 @@ class IcelandDelivery {
 }
 
 module.exports = {
-  IcelandDelivery,
+  IcelandRewrite,
 };
-
-// Navigate to sainsburys
-// Enter postcode
-// Check delivery
-// Scrape available time slots
