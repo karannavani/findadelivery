@@ -67,8 +67,6 @@ const onJobActive = functions
   .runWith({ memory: '2GB', timeoutSeconds: 540 })
   .firestore.document('jobs/{docId}')
   .onUpdate(async (snapshot, context) => {
-    // const jobs = [];
-
     try {
       if (
         snapshot.after.data().state === 'Active' &&
@@ -79,14 +77,24 @@ const onJobActive = functions
         const email = user.data().email;
 
         await updatePerformAt(snapshot.after);
-        // jobs.push(workers[worker](postcode, email, snapshot.after.id));
         return workers[worker](postcode, email, snapshot.after.id);
       }
     } catch (error) {
       console.log('error on job active', error);
       return;
     }
-    // return await Promise.all(jobs);
+  });
+
+const checkAsda = functions
+  .region('europe-west2')
+  .runWith({
+    memory: '2GB',
+    timeoutSeconds: 300,
+  })
+  .https.onRequest(async (req, res) => {
+    console.log('req is', req.body);
+    const { postcode, email, docId } = req.body;
+    new AsdaDelivery(postcode, email, docId, res);
   });
 
 const checkIceland = functions
@@ -115,8 +123,18 @@ const checkSainsburys = functions
 
 const workers = {
   asdaDeliveryScan: async (postcode, email, docId) => {
+    const url =
+      'https://europe-west2-checkout-app-uk.cloudfunctions.net/checkAsda';
+
     console.log('hit asda worker with', postcode, email, docId);
-    return new AsdaDelivery(postcode, email, docId);
+    return await fetch(url, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ postcode, email, docId }),
+    });
   },
   icelandDeliveryScan: async (postcode, email, docId) => {
     const url =
@@ -163,6 +181,7 @@ module.exports = {
   onJobActive,
   updatePerformAt,
   send,
+  checkAsda,
   checkIceland,
   checkSainsburys,
   IcelandDelivery,

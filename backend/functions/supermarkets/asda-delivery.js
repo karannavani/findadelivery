@@ -19,11 +19,12 @@ const db = admin
 sgMail.setApiKey(functions.config().sendgrid.api_key);
 
 class AsdaDelivery {
-  constructor(postcode, email, docId) {
+  constructor(postcode, email, docId, res) {
     this.merchant = 'Asda';
     this.postcode = postcode;
     this.email = email;
     this.docId = docId;
+    this.res = res;
     this.availabilityVerified = false;
     this.checkAsda();
   }
@@ -127,12 +128,13 @@ class AsdaDelivery {
 
   async completeSearch(slots) {
     if (this.availabilityVerified) {
-      send(slots);
+      await send(slots);
       await db.doc(`jobs/${this.docId}`).update({ state: 'Completed' });
       console.log('slots are', slots);
     } else {
       console.log('No slots currently available');
     }
+    return this.res.status(200).end();
   }
 }
 
