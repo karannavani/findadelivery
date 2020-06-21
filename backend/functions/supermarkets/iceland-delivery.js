@@ -1,8 +1,8 @@
 const puppeteer = require('puppeteer');
 const moment = require('moment');
-const { send } = require('../utils/email-service');
 const serviceAccount = require('../checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json');
 const admin = require('firebase-admin');
+const { send } = require('../utils/email-service');
 
 const db = admin
   .initializeApp(
@@ -14,7 +14,7 @@ const db = admin
   )
   .firestore();
 
-class IcelandRewrite {
+class IcelandDelivery {
   constructor(postcode, email, docId, res) {
     this.merchant = 'Iceland';
     this.postcode = postcode;
@@ -44,6 +44,7 @@ class IcelandRewrite {
   async checkSlots() {
     try {
       this.slots = await this.retrieveAvailableTimeSlots();
+      // Complete job and remove
 
       if (this.availabilityVerified) {
         await send(this.slots);
@@ -238,5 +239,5 @@ class IcelandRewrite {
 }
 
 module.exports = {
-  IcelandRewrite,
+  IcelandDelivery,
 };

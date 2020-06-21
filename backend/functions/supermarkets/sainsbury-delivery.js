@@ -1,8 +1,5 @@
-const chromium = require('chrome-aws-lambda');
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 const moment = require('moment');
-const sgMail = require('@sendgrid/mail');
-const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 const serviceAccount = require('../checkout-app-uk-firebase-adminsdk-2zjvs-54e313e107.json');
 const { send } = require('../utils/email-service');
@@ -17,14 +14,13 @@ const db = admin
   )
   .firestore();
 
-sgMail.setApiKey(functions.config().sendgrid.api_key);
-
 class SainsburysDelivery {
-  constructor(postcode, email, docId) {
+  constructor(postcode, email, docId, res) {
     this.merchant = "Sainsbury's";
     this.postcode = postcode;
     this.email = email;
     this.docId = docId;
+    this.res = res;
     this.availabilityVerified = false;
     this.slots = {};
     this.entryUrl = 'https://www.sainsburys.co.uk/shop/gb/groceries';
@@ -53,38 +49,36 @@ class SainsburysDelivery {
 
       if (this.availabilityVerified) {
         // Complete job and remove
+        await send(this.slots);
         await db.doc(`jobs/${this.docId}`).update({ state: 'Completed' });
-        send(this.slots);
-        console.log(this.slots);
       } else {
         console.log('Not slots currently available');
       }
     } catch (error) {
       console.log(error);
     }
+
+    return this.res.status(200).end();
   }
 
   async retrieveAvailableTimeSlots() {
+    console.log('retrieving time slots from Sainsburys');
     const { postcode, selectors, entryUrl } = this;
 
     const browser = await puppeteer.launch({
-      args: chromium.args,
-      defaultViewport: chromium.defaultViewport,
-      executablePath: await chromium.executablePath,
-      headless: chromium.headless,
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
 
     try {
       const page = await browser.newPage();
-      page.setDefaultNavigationTimeout(0);
-      page.setDefaulTimeout(0);
-
       // Debug - Allows for console.log to work in evaluate function
       // page.on('console', (consoleObj) => console.log(consoleObj.text()));
 
       // Open page 1
       await page.goto(entryUrl, {
         waitUntil: 'networkidle2',
+        timeout: 0,
       });
 
       // Populates postcode field and submits to navigate to next page
@@ -108,13 +102,14 @@ class SainsburysDelivery {
       );
 
       const slots = this.returnFormattedSlots(availableSlotsArray);
+      console.log('slots are', slots);
 
       // Finish up
-      browser.close();
+      await browser.close();
       return slots;
     } catch (error) {
       console.log('oh no sainsburys');
-      browser.close();
+      await browser.close();
       throw error;
     }
   }

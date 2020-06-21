@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 const { AsdaDelivery } = require('./supermarkets/asda-delivery');
 const { SainsburysDelivery } = require('./supermarkets/sainsbury-delivery');
 const { send } = require('./utils/email-service');
-const { IcelandRewrite } = require('./supermarkets/iceland-delivery-class');
+const { IcelandDelivery } = require('./supermarkets/iceland-delivery');
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -98,7 +98,19 @@ const checkIceland = functions
   .https.onRequest(async (req, res) => {
     console.log('req is', req.body);
     const { postcode, email, docId } = req.body;
-    new IcelandRewrite(postcode, email, docId, res);
+    new IcelandDelivery(postcode, email, docId, res);
+  });
+
+const checkSainsburys = functions
+  .region('europe-west2')
+  .runWith({
+    memory: '2GB',
+    timeoutSeconds: 300,
+  })
+  .https.onRequest(async (req, res) => {
+    console.log('req is', req.body);
+    const { postcode, email, docId } = req.body;
+    new SainsburysDelivery(postcode, email, docId, res);
   });
 
 const workers = {
@@ -120,8 +132,18 @@ const workers = {
     });
   },
   sainsburysDeliveryScan: async (postcode, email, docId) => {
+    const url =
+      'https://europe-west2-checkout-app-uk.cloudfunctions.net/checkSainsburys';
+
     console.log('hit sainsburys worker with', postcode, email, docId);
-    return new SainsburysDelivery(postcode, email, docId);
+    return await fetch(url, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ postcode, email, docId }),
+    });
   },
 };
 
@@ -142,5 +164,6 @@ module.exports = {
   updatePerformAt,
   send,
   checkIceland,
-  IcelandRewrite,
+  checkSainsburys,
+  IcelandDelivery,
 };
