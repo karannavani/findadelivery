@@ -1,9 +1,52 @@
 <div class="container">
-  <h4>Pick a store to find a delivery slot</h4>
+  <div class="row m-0">
+    <div id="postcode-entry col-12 col-lg-8 col-md-7">
+      <h3>
+        What's your postcode?
+      </h3>
+      <div class="form-group">
+        <small id="passwordHelpInline" class="text-muted">
+          e.g. SW1A 1AA
+        </small>
+        <input type="text" class="form-control" [formControl]="postcode" />
+      </div>
+    </div>
+  </div>
+
+  <h3>Pick a store to find a delivery slot</h3>
   <div class="row">
     <div class="col-8 mx-auto col-sm-8 mx-lg-0 mx-md-0 col-md-5 col-lg-3">
-      <div class="card supermarket-card" type="button" routerLink="/asda">
+      <div class="card supermarket-card" type="button">
         <div id="asdaWrapper"></div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <button
+        [disabled]="searchInProgress"
+        type="button"
+        class="btn btn-primary"
+        (click)="scheduleJob('ASDA')"
+      >
+        Email me when a slot is found
+      </button>
+      <div *ngIf="searchInProgress" class="alert alert-secondary" role="alert">
+        <h6 class="alert-heading"><strong>We're searching</strong></h6>
+        <p>
+          You will receive an email as soon as we find a slot. You can leave
+          this page now.
+        </p>
+        <img
+          src="../../../assets/fogg-searching-2.png"
+          class="img-fluid d-block mx-auto"
+          style="width: 300px;"
+          alt="Sherlock Holmes search with dog in London"
+        />
+        <cite class="d-block mt-2 text-center"
+          ><a href="https://icons8.com/ouch/illustration/fogg-searching-2"
+            >Illustration by Marina Fedoseenko</a
+          ></cite
+        >
       </div>
     </div>
   </div>
