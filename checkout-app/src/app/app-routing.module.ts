@@ -5,18 +5,12 @@ import { Routes, RouterModule } from '@angular/router';
 import { LoginComponent } from './login/login.component';
 import { HomeComponent } from './home/home.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { AsdaDeliveryComponent } from './asda/asda-delivery/asda-delivery.component';
 
 // Guards
 import { AuthGuard } from './shared/guards/auth.guard';
 import { LoginRedirectGuard } from './shared/guards/login-redirect.guard';
 
 const routes: Routes = [
-  {
-    path: '',
-    redirectTo: 'home',
-    pathMatch: 'full'
-  },
   // TODO: Add this route.
   // {
   //   path: '**',
@@ -24,7 +18,7 @@ const routes: Routes = [
   // },
   {
     path: 'home',
-    component: HomeComponent
+    component: HomeComponent,
   },
   {
     path: 'login',
@@ -37,9 +31,9 @@ const routes: Routes = [
     canActivate: [AuthGuard],
   },
   {
-    path: 'asda',
-    component: AsdaDeliveryComponent,
-    canActivate: [AuthGuard],
+    path: '',
+    redirectTo: 'home',
+    pathMatch: 'full',
   },
 ];
 

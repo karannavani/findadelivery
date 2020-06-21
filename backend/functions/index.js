@@ -1,14 +1,16 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const fetch = require('node-fetch');
 const { AsdaDelivery } = require('./supermarkets/asda-delivery');
-const { IcelandDelivery } = require('./supermarkets/iceland-delivery');
 const { SainsburysDelivery } = require('./supermarkets/sainsbury-delivery');
 const { send } = require('./utils/email-service');
+const { IcelandDelivery } = require('./supermarkets/iceland-delivery');
 
 admin.initializeApp();
 const db = admin.firestore();
 
 const taskRunner = functions
+  .region('europe-west2')
   .runWith({ memory: '2GB' })
   .pubsub.schedule('* * * * *')
   .onRun(async (context) => {
@@ -31,73 +33,131 @@ const checkPerformAt = async () => {
     return;
   } else {
     query.docs.forEach((doc) => {
-      console.log('doc to perform now is', doc);
       return db.doc(`jobs/${doc.id}`).update({ performAt: 'Now' });
     });
   }
 };
 
 const onJobScheduled = functions
-  .runWith({ memory: '2GB' })
+  .region('europe-west2')
+  .runWith({ memory: '2GB', timeoutSeconds: 300 })
   .firestore.document('jobs/{docId}')
   .onCreate(async (snapshot, context) => {
-    const job = [];
-    if (snapshot.data().state === 'Scheduled') {
-      console.log('scheduled found');
-      const { worker, postcode } = snapshot.data();
-      snapshot
-        .data()
-        .user.get()
-        .then((user) => {
-          console.log('inside the then block');
-          const email = user.data().email;
-          updatePerformAt(snapshot)
-            .then(() => {
-              job.push(workers[worker](postcode, email, snapshot.id));
-            })
-            .catch((error) =>
-              console.log('updatePerformAt error from scheduled', error)
-            );
-        });
+    try {
+      if (snapshot.data().state === 'Scheduled') {
+        const { worker, postcode } = snapshot.data();
+        const user = await snapshot.data().user.get();
+        const email = user.data().email;
+
+        await updatePerformAt(snapshot);
+        return workers[worker](postcode, email, snapshot.id);
+      }
+    } catch (error) {
+      console.log('error on job active', error);
+      return;
     }
-    return Promise.all(job);
   });
 
 const onJobActive = functions
-  .runWith({ memory: '2GB' })
+  .region('europe-west2')
+  .runWith({ memory: '2GB', timeoutSeconds: 300 })
   .firestore.document('jobs/{docId}')
   .onUpdate(async (snapshot, context) => {
-    const job = [];
-    if (
-      snapshot.after.data().state === 'Active' &&
-      snapshot.after.data().performAt === 'Now'
-    ) {
-      const { worker, postcode } = snapshot.after.data();
-      snapshot.after
-        .data()
-        .user.get()
-        .then((user) => {
-          const email = user.data().email;
-          updatePerformAt(snapshot.after).then(() => {
-            job.push(workers[worker](postcode, email, snapshot.after.id));
-          });
-        });
+    try {
+      if (
+        snapshot.after.data().state === 'Active' &&
+        snapshot.after.data().performAt === 'Now'
+      ) {
+        const { worker, postcode } = snapshot.after.data();
+        const user = await snapshot.after.data().user.get();
+        const email = user.data().email;
+
+        await updatePerformAt(snapshot.after);
+        return workers[worker](postcode, email, snapshot.after.id);
+      }
+    } catch (error) {
+      console.log('error on job active', error);
+      return;
     }
-    return Promise.all(job);
+  });
+
+const checkAsda = functions
+  .region('europe-west2')
+  .runWith({
+    memory: '2GB',
+    timeoutSeconds: 300,
+  })
+  .https.onRequest(async (req, res) => {
+    console.log('req is', req.body);
+    const { postcode, email, docId } = req.body;
+    new AsdaDelivery(postcode, email, docId, res);
+  });
+
+const checkIceland = functions
+  .region('europe-west2')
+  .runWith({
+    memory: '2GB',
+    timeoutSeconds: 300,
+  })
+  .https.onRequest(async (req, res) => {
+    console.log('req is', req.body);
+    const { postcode, email, docId } = req.body;
+    new IcelandDelivery(postcode, email, docId, res);
+  });
+
+const checkSainsburys = functions
+  .region('europe-west2')
+  .runWith({
+    memory: '2GB',
+    timeoutSeconds: 300,
+  })
+  .https.onRequest(async (req, res) => {
+    console.log('req is', req.body);
+    const { postcode, email, docId } = req.body;
+    new SainsburysDelivery(postcode, email, docId, res);
   });
 
 const workers = {
   asdaDeliveryScan: async (postcode, email, docId) => {
+    const url =
+      'https://europe-west2-checkout-app-uk.cloudfunctions.net/checkAsda';
+
     console.log('hit asda worker with', postcode, email, docId);
-    new AsdaDelivery(postcode, email, docId);
+    return await fetch(url, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ postcode, email, docId }),
+    });
   },
   icelandDeliveryScan: async (postcode, email, docId) => {
+    const url =
+      'https://europe-west2-checkout-app-uk.cloudfunctions.net/checkIceland';
     console.log('hit iceland worker with', postcode, email, docId);
-    new IcelandDelivery(postcode, email, docId);
+    return await fetch(url, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ postcode, email, docId }),
+    });
   },
   sainsburysDeliveryScan: async (postcode, email, docId) => {
+    const url =
+      'https://europe-west2-checkout-app-uk.cloudfunctions.net/checkSainsburys';
+
     console.log('hit sainsburys worker with', postcode, email, docId);
-    new SainsburysDelivery(postcode, email, docId);
+    return await fetch(url, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ postcode, email, docId }),
+    });
   },
 };
 
@@ -112,10 +172,13 @@ module.exports = {
   taskRunner,
   checkPerformAt,
   AsdaDelivery,
-  IcelandDelivery,
   SainsburysDelivery,
   onJobScheduled,
   onJobActive,
   updatePerformAt,
   send,
+  checkAsda,
+  checkIceland,
+  checkSainsburys,
+  IcelandDelivery,
 };

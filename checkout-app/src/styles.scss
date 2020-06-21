@@ -124,7 +124,29 @@ span {
   background-size: contain;
   background-repeat: no-repeat;
   width: 100%;
-  min-height: 80px;
+  height: 100%;
+}
+
+#icelandWrapper {
+  background-image: url('./assets/supermarkets/Iceland_logo.svg.png');
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 100%;
+  height: 100%;
+}
+
+#sainsburysWrapper {
+  background-image: url('./assets/supermarkets/Sainsburys_logo.png');
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  width: 100%;
+  height: 100%;
+}
+
+.grayscale {
+  filter: grayscale(100%);
 }
 
 .form-group {
