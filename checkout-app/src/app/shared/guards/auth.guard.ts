@@ -19,8 +19,7 @@ export class AuthGuard implements CanActivate {
     public router: Router
   ) {}
 
-  canActivate(
-  ): Observable<boolean> | Promise<boolean> | boolean {
+  canActivate(): Observable<boolean> | Promise<boolean> | boolean {
     return this.authenticationService.afAuth.authState.pipe(
       take(1),
       map((user) => {
@@ -29,7 +28,7 @@ export class AuthGuard implements CanActivate {
           return false;
         }
         return true;
-      }),
+      })
     );
   }
 }

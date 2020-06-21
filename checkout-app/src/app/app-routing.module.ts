@@ -11,11 +11,6 @@ import { AuthGuard } from './shared/guards/auth.guard';
 import { LoginRedirectGuard } from './shared/guards/login-redirect.guard';
 
 const routes: Routes = [
-  {
-    path: '',
-    redirectTo: 'home',
-    pathMatch: 'full',
-  },
   // TODO: Add this route.
   // {
   //   path: '**',
@@ -34,6 +29,11 @@ const routes: Routes = [
     path: 'dashboard',
     component: DashboardComponent,
     canActivate: [AuthGuard],
+  },
+  {
+    path: '',
+    redirectTo: 'home',
+    pathMatch: 'full',
   },
 ];
 

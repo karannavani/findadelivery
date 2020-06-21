@@ -44,7 +44,7 @@ export class AuthenticationService {
             console.log('You have been successfully logged in!', result);
             this.userDetails = result.user;
             this.checkIfUserExists(this.userDetails.uid);
-            this.router.navigate(['home']);
+            this.router.navigate(['dashboard']);
           })
           .catch((error) => {
             console.log(error);
@@ -81,7 +81,7 @@ export class AuthenticationService {
           this.firestore.collection('users').doc(id).set({
             userId: this.getUserId(),
             displayName: this.userDetails.displayName,
-            email: this.userDetails.email
+            email: this.userDetails.email,
           });
         }
       });
