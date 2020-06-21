@@ -40,11 +40,9 @@ const checkPerformAt = async () => {
 
 const onJobScheduled = functions
   .region('europe-west2')
-  .runWith({ memory: '2GB', timeoutSeconds: 540 })
+  .runWith({ memory: '2GB', timeoutSeconds: 300 })
   .firestore.document('jobs/{docId}')
   .onCreate(async (snapshot, context) => {
-    const jobs = [];
-
     try {
       if (snapshot.data().state === 'Scheduled') {
         const { worker, postcode } = snapshot.data();
@@ -52,19 +50,17 @@ const onJobScheduled = functions
         const email = user.data().email;
 
         await updatePerformAt(snapshot);
-        jobs.push(workers[worker](postcode, email, snapshot.id));
+        return workers[worker](postcode, email, snapshot.id);
       }
     } catch (error) {
       console.log('error on job active', error);
       return;
     }
-
-    return await Promise.all(jobs);
   });
 
 const onJobActive = functions
   .region('europe-west2')
-  .runWith({ memory: '2GB', timeoutSeconds: 540 })
+  .runWith({ memory: '2GB', timeoutSeconds: 300 })
   .firestore.document('jobs/{docId}')
   .onUpdate(async (snapshot, context) => {
     try {
