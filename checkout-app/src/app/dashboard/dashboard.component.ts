@@ -34,19 +34,21 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.titleService.setTitle(newTitle);
   }
 
-  scheduleJob(store: string) {
-    if (this.userPostcode && this.userPostcode !== this.postcode.value) {
-      this.firestore
-        .doc(`users/${this.authenticationService.getUserId()}`)
-        .update({ postcode: this.postcode.value });
-    } else {
-      this.firestore
-        .doc(`users/${this.authenticationService.getUserId()}`)
-        .update({ postcode: this.postcode.value });
-    }
-    this.schedulingService.createJob(store, {
-      postcode: this.postcode.value,
-      worker: 'asdaDeliveryScan',
+  scheduleJob() {
+    this.selectedSupermarket.forEach((supermarket) => {
+      if (this.userPostcode && this.userPostcode !== this.postcode.value) {
+        this.firestore
+          .doc(`users/${this.authenticationService.getUserId()}`)
+          .update({ postcode: this.postcode.value });
+      } else {
+        this.firestore
+          .doc(`users/${this.authenticationService.getUserId()}`)
+          .update({ postcode: this.postcode.value });
+      }
+      this.schedulingService.createJob(supermarket, {
+        postcode: this.postcode.value,
+        worker: `${supermarket}DeliveryScan`,
+      });
     });
 
     this.searchInProgress = true;
@@ -76,7 +78,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
           ref
             .where('user', '==', userRef)
             .where('state', 'in', ['Scheduled', 'Active'])
-            .where('store', '==', 'ASDA')
         )
         .get()
         .subscribe((res) => {
