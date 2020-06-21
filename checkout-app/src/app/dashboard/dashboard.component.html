@@ -15,24 +15,44 @@
 
   <h3>Pick a store to find a delivery slot</h3>
   <div class="row">
-    <div class="col-8 mx-auto col-sm-8 mx-lg-0 mx-md-0 col-md-5 col-lg-3">
+    <!-- <div class="col-8 mx-auto col-sm-8 mx-lg-0 mx-md-0 col-md-5 col-lg-12"> -->
+    <div
+      class="card supermarket-card col-12 col-lg-3 mx-auto my-3 mx-lg-3"
+      type="button"
+      (click)="selectSupermarket('Asda')"
+    >
       <div
-        class="card supermarket-card"
-        type="button"
-        (click)="selectSupermarket('Asda')"
-      >
-        <div
-          id="asdaWrapper"
-          [ngClass]="{ grayscale: !selectedSupermarket.includes('Asda') }"
-        ></div>
-      </div>
+        id="asdaWrapper"
+        [ngClass]="{ grayscale: !selectedSupermarket.includes('Asda') }"
+      ></div>
+    </div>
+    <div
+      class="card supermarket-card col-12 col-lg-3 mx-auto my-3 mx-lg-3"
+      type="button"
+      (click)="selectSupermarket('Iceland')"
+    >
+      <div
+        id="icelandWrapper"
+        [ngClass]="{ grayscale: !selectedSupermarket.includes('Iceland') }"
+      ></div>
+    </div>
+    <div
+      class="card supermarket-card col-12 col-lg-3 mx-auto my-3 mx-lg-3"
+      type="button"
+      (click)="selectSupermarket('Sainsburys')"
+    >
+      <div
+        id="sainsburysWrapper"
+        [ngClass]="{ grayscale: !selectedSupermarket.includes('Sainsburys') }"
+      ></div>
+      <!-- </div> -->
     </div>
 
     <div class="col-12">
       <button
         [disabled]="searchInProgress"
         type="button"
-        class="btn btn-primary"
+        class="btn btn-primary my-3"
         (click)="scheduleJob('ASDA')"
       >
         Email me when a slot is found
