@@ -16,8 +16,15 @@
   <h3>Pick a store to find a delivery slot</h3>
   <div class="row">
     <div class="col-8 mx-auto col-sm-8 mx-lg-0 mx-md-0 col-md-5 col-lg-3">
-      <div class="card supermarket-card" type="button">
-        <div id="asdaWrapper"></div>
+      <div
+        class="card supermarket-card"
+        type="button"
+        (click)="selectSupermarket('Asda')"
+      >
+        <div
+          id="asdaWrapper"
+          [ngClass]="{ grayscale: !selectedSupermarket.includes('Asda') }"
+        ></div>
       </div>
     </div>
 

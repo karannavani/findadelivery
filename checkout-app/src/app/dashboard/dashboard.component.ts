@@ -23,6 +23,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   userPostcode = null;
   searchInProgress = false;
   subscriptions = new Subscription();
+  selectedSupermarket = [];
 
   ngOnInit(): void {
     this.checkIfPostcodeExists();
@@ -84,6 +85,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
           }
         })
     );
+  }
+
+  selectSupermarket(supermarket) {
+    if (this.selectedSupermarket.includes(supermarket)) {
+      const index = this.selectedSupermarket.indexOf(supermarket);
+      this.selectedSupermarket.splice(index, 1);
+    } else {
+      this.selectedSupermarket.push(supermarket);
+    }
   }
 
   ngOnDestroy() {

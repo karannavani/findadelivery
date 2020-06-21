@@ -127,6 +127,10 @@ span {
   min-height: 80px;
 }
 
+.grayscale {
+  filter: grayscale(100%);
+}
+
 .form-group {
   small {
     margin: 5px 0 10px 0;
