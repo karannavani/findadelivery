@@ -83,7 +83,7 @@
   <h3>Recently completed searches</h3>
   <div *ngIf="recentSearches.length">
     <div *ngFor="let search of recentSearches">
-      {{ search.store.charAt(0).toUpperCase() + search.store.slice(1) }} -
+      {{ search.store }} -
       {{ search.created }}
     </div>
   </div>

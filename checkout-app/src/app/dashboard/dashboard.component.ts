@@ -112,13 +112,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
         .subscribe((res) => {
           this.activeSearches = res;
           this.activeSearches.forEach((activeSearch) => {
-            activeSearch.store =
-              activeSearch.store.charAt(0).toUpperCase() +
-              activeSearch.store.slice(1);
-
-            activeSearch.created = new Date(
-              activeSearch.created
-            ).toLocaleString();
+            activeSearch.store = this.formatStore(activeSearch.store);
+            activeSearch.created = this.formatDate(activeSearch.created);
           });
           this.searchInProgress = res.length ? true : false;
         })
@@ -137,8 +132,20 @@ export class DashboardComponent implements OnInit, OnDestroy {
         .valueChanges()
         .subscribe((res) => {
           this.recentSearches = res.slice(0, 5);
+          this.recentSearches.forEach((recentSearch) => {
+            recentSearch.store = this.formatStore(recentSearch.store);
+            recentSearch.created = this.formatDate(recentSearch.created);
+          });
         })
     );
+  }
+
+  formatStore(store: string) {
+    return store.charAt(0).toUpperCase() + store.slice(1);
+  }
+
+  formatDate(created: string) {
+    return new Date(created).toLocaleString();
   }
 
   selectSupermarket(supermarket) {
