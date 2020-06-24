@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { SchedulingService } from '../shared/services/scheduling/scheduling.service';
 import { AuthenticationService } from '../shared/services/authentication/authentication.service';
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { AngularFirestore } from '@angular/fire/firestore';
+import { Job } from './job-interace';
 
 @Component({
   selector: 'app-dashboard',
@@ -16,7 +17,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private schedulingService: SchedulingService,
     private authenticationService: AuthenticationService,
     private titleService: Title,
-    private firestore: AngularFirestore
+    private firestore: AngularFirestore,
+    private cdRef: ChangeDetectorRef
   ) {}
 
   postcode = new FormControl('');
@@ -24,10 +26,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   searchInProgress = false;
   subscriptions = new Subscription();
   selectedSupermarket = [];
+  userRef;
+  // icelandStatus: Job = { state: null } as Job;
 
   ngOnInit(): void {
+    this.checkUserRef();
     this.checkIfPostcodeExists();
     this.isSearchInProgress();
+    // this.subscribeToIcelandStatus(this.userRef);
   }
 
   setTitle(newTitle: string) {
@@ -54,6 +60,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.searchInProgress = true;
   }
 
+  checkUserRef() {
+    this.userRef = this.firestore
+      .collection('users')
+      .doc(this.authenticationService.getUserId()).ref;
+  }
+
   checkIfPostcodeExists() {
     this.subscriptions.add(
       this.firestore
@@ -68,22 +80,38 @@ export class DashboardComponent implements OnInit, OnDestroy {
     );
   }
 
+  // subscribeToIcelandStatus(userRef) {
+  //   const icelandObservable = this.firestore
+  //     .collection('jobs', (ref) =>
+  //       ref
+  //         .where('user', '==', this.userRef)
+  //         .where('store', '==', 'iceland')
+  //         .orderBy('created', 'desc')
+  //     )
+  //     .valueChanges();
+
+  //   this.subscriptions.add(
+  //     icelandObservable.subscribe((data) => {
+  //       this.icelandStatus = data[0] as Job;
+  //       console.log('iceland state is', data);
+  //     })
+  //   );
+  // }
+
   isSearchInProgress() {
-    const userRef = this.firestore
-      .collection('users')
-      .doc(this.authenticationService.getUserId()).ref;
     this.subscriptions.add(
       this.firestore
         .collection('jobs', (ref) =>
           ref
-            .where('user', '==', userRef)
+            .where('user', '==', this.userRef)
             .where('state', 'in', ['Scheduled', 'Active'])
         )
-        .get()
+        .valueChanges()
         .subscribe((res) => {
-          if (!res.empty) {
-            this.searchInProgress = true;
-          }
+          console.log('res is', res);
+          this.searchInProgress = res.length ? true : false;
+          console.log('updating based on changes');
+          this.cdRef.detectChanges();
         })
     );
   }
