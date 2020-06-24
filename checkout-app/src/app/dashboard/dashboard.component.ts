@@ -17,8 +17,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private schedulingService: SchedulingService,
     private authenticationService: AuthenticationService,
     private titleService: Title,
-    private firestore: AngularFirestore,
-    private cdRef: ChangeDetectorRef
+    private firestore: AngularFirestore
   ) {}
 
   postcode = new FormControl('');
@@ -110,8 +109,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         .subscribe((res) => {
           console.log('res is', res);
           this.searchInProgress = res.length ? true : false;
-          console.log('updating based on changes');
-          this.cdRef.detectChanges();
         })
     );
   }
