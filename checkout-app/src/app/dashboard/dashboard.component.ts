@@ -25,13 +25,16 @@ export class DashboardComponent implements OnInit, OnDestroy {
   searchInProgress = false;
   subscriptions = new Subscription();
   selectedSupermarket = [];
-  userRef;
+  userRef: any;
+  recentSearches = [];
+  activeSearches = [];
   // icelandStatus: Job = { state: null } as Job;
 
   ngOnInit(): void {
     this.getUserRef();
     this.checkIfPostcodeExists();
     this.isSearchInProgress();
+    this.getRecentSearches();
     // this.subscribeToIcelandStatus(this.userRef);
   }
 
@@ -107,7 +110,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
         )
         .valueChanges()
         .subscribe((res) => {
+          this.activeSearches = res;
+          this.activeSearches.forEach((activeSearch) => {
+            activeSearch.store =
+              activeSearch.store.charAt(0).toUpperCase() +
+              activeSearch.store.slice(1);
+
+            activeSearch.created = new Date(
+              activeSearch.created
+            ).toLocaleString();
+          });
           this.searchInProgress = res.length ? true : false;
+        })
+    );
+  }
+
+  getRecentSearches() {
+    this.subscriptions.add(
+      this.firestore
+        .collection('jobs', (ref) =>
+          ref
+            .where('user', '==', this.userRef)
+            .where('state', 'in', ['Completed'])
+            .orderBy('created', 'desc')
+        )
+        .valueChanges()
+        .subscribe((res) => {
+          this.recentSearches = res.slice(0, 5);
         })
     );
   }
