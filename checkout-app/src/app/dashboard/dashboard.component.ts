@@ -29,7 +29,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   // icelandStatus: Job = { state: null } as Job;
 
   ngOnInit(): void {
-    this.checkUserRef();
+    this.getUserRef();
     this.checkIfPostcodeExists();
     this.isSearchInProgress();
     // this.subscribeToIcelandStatus(this.userRef);
@@ -59,7 +59,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.searchInProgress = true;
   }
 
-  checkUserRef() {
+  getUserRef() {
     this.userRef = this.firestore
       .collection('users')
       .doc(this.authenticationService.getUserId()).ref;
@@ -107,7 +107,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         )
         .valueChanges()
         .subscribe((res) => {
-          console.log('res is', res);
           this.searchInProgress = res.length ? true : false;
         })
     );

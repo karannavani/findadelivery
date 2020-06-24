@@ -85,8 +85,10 @@ span {
   background-color: #00785f;
 
   &:hover,
-  &:active {
-    background-color: #045746;
+  &:active,
+  &:focus,
+  &:disabled {
+    background-color: #045746 !important;
   }
 }
 
@@ -143,6 +145,13 @@ span {
   background-repeat: no-repeat;
   width: 100%;
   height: 100%;
+}
+
+.isDisabled {
+  transition: none !important;
+  &:hover {
+    transform: none !important;
+  }
 }
 
 .grayscale {
