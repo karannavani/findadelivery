@@ -144,8 +144,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     return store.charAt(0).toUpperCase() + store.slice(1);
   }
 
-  formatDate(created: string) {
-    return new Date(created).toLocaleString();
+  formatDate(created: any) {
+    // const options = {}
+    const date = new Date(created).toLocaleString('en-GB', {
+      timeStyle: 'short',
+      dateStyle: 'medium',
+    } as any);
+
+    const time = date.split(',')[1];
+    const day = date.split(',')[0];
+
+    return `${time}, ${day}`;
   }
 
   selectSupermarket(supermarket) {
