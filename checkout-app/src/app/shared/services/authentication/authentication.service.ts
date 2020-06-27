@@ -4,6 +4,7 @@ import { auth } from 'firebase';
 import { Observable, Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { AngularFirestore } from '@angular/fire/firestore';
+import { reduce } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -29,20 +30,20 @@ export class AuthenticationService {
   }
 
   // Sign in with Google
-  GoogleAuth() {
-    return this.AuthLogin(new auth.GoogleAuthProvider());
+  GoogleAuth(inviteCode?: string) {
+    return this.AuthLogin(new auth.GoogleAuthProvider(), inviteCode);
   }
 
   // Auth logic to run auth providers
-  AuthLogin(provider) {
+  AuthLogin(provider, inviteCode?: string) {
     return this.afAuth
       .setPersistence(auth.Auth.Persistence.LOCAL)
       .then(() => {
         this.afAuth
           .signInWithPopup(provider)
           .then((result) => {
-            console.log('You have been successfully logged in!', result);
             this.userDetails = result.user;
+            this.handleInviteCode(inviteCode);
             this.checkIfUserExists(this.userDetails.uid);
             this.router.navigate(['dashboard']);
           })
@@ -70,6 +71,23 @@ export class AuthenticationService {
     this.afAuth.signOut().then(() => {
       this.router.navigate(['login']);
     });
+  }
+
+  handleInviteCode(inviteCode: string) {
+    if (inviteCode) {
+      this.firestore
+        .collection('invites', (ref) =>
+          ref.where('inviteCode', '==', inviteCode)
+        )
+        .get()
+        .subscribe((snapshot) => {
+          console.log('docs are', snapshot.docs);
+
+          this.firestore
+            .doc(`invites/${snapshot.docs[0].id}`)
+            .update({ registered: true });
+        });
+    }
   }
 
   checkIfUserExists(id: string) {

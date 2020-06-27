@@ -9,13 +9,10 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 // Guards
 import { AuthGuard } from './shared/guards/auth.guard';
 import { LoginRedirectGuard } from './shared/guards/login-redirect.guard';
+import { InviteComponent } from './invite/invite.component';
+import { RegisterComponent } from './register/register.component';
 
 const routes: Routes = [
-  // TODO: Add this route.
-  // {
-  //   path: '**',
-  //   component: pageNotFoundComponent
-  // },
   {
     path: 'home',
     component: HomeComponent,
@@ -26,14 +23,26 @@ const routes: Routes = [
     canActivate: [LoginRedirectGuard],
   },
   {
+    path: 'register',
+    component: RegisterComponent,
+  },
+  {
     path: 'dashboard',
     component: DashboardComponent,
     canActivate: [AuthGuard],
   },
   {
+    path: 'invite',
+    component: InviteComponent,
+  },
+  {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full',
+  },
+  {
+    path: '**',
+    redirectTo: 'dashboard',
   },
 ];
 

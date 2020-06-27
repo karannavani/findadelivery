@@ -16,6 +16,8 @@ import { LoginComponent } from './login/login.component';
 import { HeaderComponent } from './header/header.component';
 import { AuthGuard } from './shared/guards/auth.guard';
 import { FooterComponent } from './footer/footer.component';
+import { InviteComponent } from './invite/invite.component';
+import { RegisterComponent } from './register/register.component';
 
 @NgModule({
   declarations: [
@@ -25,6 +27,8 @@ import { FooterComponent } from './footer/footer.component';
     LoginComponent,
     HeaderComponent,
     FooterComponent,
+    InviteComponent,
+    RegisterComponent,
   ],
   imports: [
     BrowserModule,
