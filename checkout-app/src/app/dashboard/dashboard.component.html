@@ -61,25 +61,51 @@
       >
         Email me when a slot is found
       </button>
-      <div *ngIf="searchInProgress" class="alert alert-secondary" role="alert">
-        <h5 class="alert-heading">
-          <strong>Your search is in progress</strong>
-        </h5>
-        <p>
-          You will receive an email as soon as we find a slot. You can leave
-          this page now.
-        </p>
-
-        <div
-          class="card supermarket-card col-12 col-lg-3 mx-auto my-3 mx-lg-3"
-          *ngFor="let activeSearch of activeSearches"
-        >
-          <p>{{ activeSearch.store }}, created at {{ activeSearch.created }}</p>
-        </div>
-      </div>
     </div>
   </div>
-  <hr />
+  <div
+    *ngIf="searchInProgress"
+    class="alert alert-secondary row m-0"
+    role="alert"
+  >
+    <div class="col-12">
+      <h5 class="alert-heading">
+        <strong
+          >Your search is in progress. We'll email you when we find a
+          slot.</strong
+        >
+      </h5>
+      <p>
+        You will receive an email per supermarket. These emails may not arrive
+        together as it depends on the availability of slots.
+      </p>
+      <p>You can leave this page now.</p>
+
+      <!-- <hr />
+      <h5>Active right now</h5> -->
+    </div>
+    <div class="col-12 col-md-6 col-lg-5 my-2 mx-auto">
+      <img
+        src="../../assets/dashboard/searching.svg"
+        class="img-fluid searching"
+        alt="illustration of a woman holding a magnifying glass in front of a browser window"
+      />
+    </div>
+    <!-- <div
+      class="card supermarket-card col-12 col-lg-3 mx-auto my-3 mx-lg-3 text-center"
+      *ngFor="let activeSearch of activeSearches"
+    >
+      <img
+        src="../../assets/supermarkets/{{ activeSearch.store }}_logo.png "
+        alt="{{ activeSearch.store }} logo"
+        class="img-fluid my-auto px-2 py-3"
+      />
+      <p class="my-auto px-4">
+        <strong>started search at {{ activeSearch.created }}</strong>
+      </p>
+    </div> -->
+  </div>
+  <!-- <hr />
   <h3>Recently completed searches</h3>
   <div *ngIf="recentSearches.length">
     <div *ngFor="let search of recentSearches">
@@ -89,5 +115,5 @@
   </div>
   <div *ngIf="!recentSearches.length">
     <p>No searches have been completed yet</p>
-  </div>
+  </div> -->
 </div>

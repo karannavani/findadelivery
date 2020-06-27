@@ -89,6 +89,7 @@ span {
   &:focus,
   &:disabled {
     background-color: #045746 !important;
+    opacity: 40%;
   }
 }
 
@@ -121,7 +122,7 @@ span {
 }
 
 #asdaWrapper {
-  background-image: url('./assets/supermarkets/Asda_logo.svg.png');
+  background-image: url('./assets/supermarkets/Asda_logo.png');
   background-position: center;
   background-size: contain;
   background-repeat: no-repeat;
@@ -130,7 +131,7 @@ span {
 }
 
 #icelandWrapper {
-  background-image: url('./assets/supermarkets/Iceland_logo.svg.png');
+  background-image: url('./assets/supermarkets/Iceland_logo.png');
   background-position: center;
   background-size: contain;
   background-repeat: no-repeat;
@@ -159,7 +160,7 @@ span {
 }
 
 hr {
-  border-top: 3px solid black;
+  border-top: 2px solid rgba(0, 0, 0, 0.2) !important;
 }
 
 .form-group {
