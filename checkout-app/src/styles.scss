@@ -86,10 +86,13 @@ span {
 
   &:hover,
   &:active,
-  &:focus,
-  &:disabled {
+  &:focus {
     background-color: #045746 !important;
-    opacity: 40%;
+  }
+
+  &:disabled {
+    background-color: #00785f !important;
+    opacity: 0.4;
   }
 }
 
