@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { SchedulingService } from '../shared/services/scheduling/scheduling.service';
 import { AuthenticationService } from '../shared/services/authentication/authentication.service';
 import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { AngularFirestore } from '@angular/fire/firestore';
+import { Job } from './job-interace';
 
 @Component({
   selector: 'app-dashboard',
@@ -24,10 +25,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
   searchInProgress = false;
   subscriptions = new Subscription();
   selectedSupermarket = [];
+  userRef: any;
+  // recentSearches = [];
+  // activeSearches = [];
 
   ngOnInit(): void {
+    this.getUserRef();
     this.checkIfPostcodeExists();
     this.isSearchInProgress();
+    // this.getRecentSearches();
   }
 
   setTitle(newTitle: string) {
@@ -54,6 +60,12 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.searchInProgress = true;
   }
 
+  getUserRef() {
+    this.userRef = this.firestore
+      .collection('users')
+      .doc(this.authenticationService.getUserId()).ref;
+  }
+
   checkIfPostcodeExists() {
     this.subscriptions.add(
       this.firestore
@@ -69,23 +81,60 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   isSearchInProgress() {
-    const userRef = this.firestore
-      .collection('users')
-      .doc(this.authenticationService.getUserId()).ref;
     this.subscriptions.add(
       this.firestore
         .collection('jobs', (ref) =>
           ref
-            .where('user', '==', userRef)
+            .where('user', '==', this.userRef)
             .where('state', 'in', ['Scheduled', 'Active'])
         )
-        .get()
+        .valueChanges()
         .subscribe((res) => {
-          if (!res.empty) {
-            this.searchInProgress = true;
-          }
+          // this.activeSearches = res;
+          // this.activeSearches.forEach((activeSearch) => {
+          //   activeSearch.store = this.formatStore(activeSearch.store);
+          //   activeSearch.created = this.formatDate(activeSearch.created);
+          // });
+          this.searchInProgress = res.length ? true : false;
         })
     );
+  }
+
+  // getRecentSearches() {
+  //   this.subscriptions.add(
+  //     this.firestore
+  //       .collection('jobs', (ref) =>
+  //         ref
+  //           .where('user', '==', this.userRef)
+  //           .where('state', 'in', ['Completed'])
+  //           .orderBy('created', 'desc')
+  //       )
+  //       .valueChanges()
+  //       .subscribe((res) => {
+  //         this.recentSearches = res.slice(0, 5);
+  //         this.recentSearches.forEach((recentSearch) => {
+  //           recentSearch.store = this.formatStore(recentSearch.store);
+  //           recentSearch.created = this.formatDate(recentSearch.created);
+  //         });
+  //       })
+  //   );
+  // }
+
+  formatStore(store: string) {
+    return store.charAt(0).toUpperCase() + store.slice(1);
+  }
+
+  formatDate(created: any) {
+    // const options = {}
+    const date = new Date(created).toLocaleString('en-GB', {
+      timeStyle: 'short',
+      dateStyle: 'medium',
+    } as any);
+
+    const time = date.split(',')[1];
+    const day = date.split(',')[0];
+
+    return `${time}, ${day}`;
   }
 
   selectSupermarket(supermarket) {
