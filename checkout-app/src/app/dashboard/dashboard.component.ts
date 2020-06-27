@@ -26,16 +26,14 @@ export class DashboardComponent implements OnInit, OnDestroy {
   subscriptions = new Subscription();
   selectedSupermarket = [];
   userRef: any;
-  recentSearches = [];
-  activeSearches = [];
-  // icelandStatus: Job = { state: null } as Job;
+  // recentSearches = [];
+  // activeSearches = [];
 
   ngOnInit(): void {
     this.getUserRef();
     this.checkIfPostcodeExists();
     this.isSearchInProgress();
-    this.getRecentSearches();
-    // this.subscribeToIcelandStatus(this.userRef);
+    // this.getRecentSearches();
   }
 
   setTitle(newTitle: string) {
@@ -82,24 +80,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
     );
   }
 
-  // subscribeToIcelandStatus(userRef) {
-  //   const icelandObservable = this.firestore
-  //     .collection('jobs', (ref) =>
-  //       ref
-  //         .where('user', '==', this.userRef)
-  //         .where('store', '==', 'iceland')
-  //         .orderBy('created', 'desc')
-  //     )
-  //     .valueChanges();
-
-  //   this.subscriptions.add(
-  //     icelandObservable.subscribe((data) => {
-  //       this.icelandStatus = data[0] as Job;
-  //       console.log('iceland state is', data);
-  //     })
-  //   );
-  // }
-
   isSearchInProgress() {
     this.subscriptions.add(
       this.firestore
@@ -110,35 +90,35 @@ export class DashboardComponent implements OnInit, OnDestroy {
         )
         .valueChanges()
         .subscribe((res) => {
-          this.activeSearches = res;
-          this.activeSearches.forEach((activeSearch) => {
-            activeSearch.store = this.formatStore(activeSearch.store);
-            activeSearch.created = this.formatDate(activeSearch.created);
-          });
+          // this.activeSearches = res;
+          // this.activeSearches.forEach((activeSearch) => {
+          //   activeSearch.store = this.formatStore(activeSearch.store);
+          //   activeSearch.created = this.formatDate(activeSearch.created);
+          // });
           this.searchInProgress = res.length ? true : false;
         })
     );
   }
 
-  getRecentSearches() {
-    this.subscriptions.add(
-      this.firestore
-        .collection('jobs', (ref) =>
-          ref
-            .where('user', '==', this.userRef)
-            .where('state', 'in', ['Completed'])
-            .orderBy('created', 'desc')
-        )
-        .valueChanges()
-        .subscribe((res) => {
-          this.recentSearches = res.slice(0, 5);
-          this.recentSearches.forEach((recentSearch) => {
-            recentSearch.store = this.formatStore(recentSearch.store);
-            recentSearch.created = this.formatDate(recentSearch.created);
-          });
-        })
-    );
-  }
+  // getRecentSearches() {
+  //   this.subscriptions.add(
+  //     this.firestore
+  //       .collection('jobs', (ref) =>
+  //         ref
+  //           .where('user', '==', this.userRef)
+  //           .where('state', 'in', ['Completed'])
+  //           .orderBy('created', 'desc')
+  //       )
+  //       .valueChanges()
+  //       .subscribe((res) => {
+  //         this.recentSearches = res.slice(0, 5);
+  //         this.recentSearches.forEach((recentSearch) => {
+  //           recentSearch.store = this.formatStore(recentSearch.store);
+  //           recentSearch.created = this.formatDate(recentSearch.created);
+  //         });
+  //       })
+  //   );
+  // }
 
   formatStore(store: string) {
     return store.charAt(0).toUpperCase() + store.slice(1);
