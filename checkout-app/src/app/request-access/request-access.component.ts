@@ -11,10 +11,19 @@ export class RequestAccessComponent implements OnInit {
 
   selectedOption = '';
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.checkRoute();
+  }
 
   select(option): void {
     this.selectedOption = option;
     this.router.navigate([option], { relativeTo: this.route });
+  }
+
+  checkRoute(): void {
+    const url = this.router.url.split('/');
+    if (url.length > 2) {
+      this.selectedOption = url[2];
+    }
   }
 }

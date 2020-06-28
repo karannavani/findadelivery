@@ -1,1 +1,24 @@
-<p>request-access-nhs works!</p>
+<div class="row m-0">
+  <div class="col-12 col-lg-5">
+    <div class="form-group">
+      <label for="email">What is your NHS email?</label>
+      <small id="emailHelp" class="form-text text-muted"
+        >This email will only be used to send you an invitation code. You will
+        be able to sign up with a different email when you receive an
+        invite.</small
+      >
+
+      <input
+        type="email"
+        class="form-control"
+        [formControl]="email"
+        placeholder="example@nhs.uk"
+        [ngClass]="{ 'is-invalid': error }"
+      />
+      <small *ngIf="error" class="text-danger">{{ error }}</small>
+    </div>
+    <button type="button" class="btn btn-primary my-3" (click)="onSubmit()">
+      Submit
+    </button>
+  </div>
+</div>
