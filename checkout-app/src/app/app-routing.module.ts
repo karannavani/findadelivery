@@ -11,6 +11,9 @@ import { AuthGuard } from './shared/guards/auth.guard';
 import { LoginRedirectGuard } from './shared/guards/login-redirect.guard';
 import { InviteComponent } from './invite/invite.component';
 import { RegisterComponent } from './register/register.component';
+import { RequestAccessComponent } from './request-access/request-access.component';
+import { RequestAccessNhsComponent } from './request-access/request-access-nhs/request-access-nhs.component';
+import { RequestAccessGeneralComponent } from './request-access/request-access-general/request-access-general.component';
 
 const routes: Routes = [
   {
@@ -34,6 +37,14 @@ const routes: Routes = [
   {
     path: 'invite',
     component: InviteComponent,
+  },
+  {
+    path: 'request-access',
+    component: RequestAccessComponent,
+    children: [
+      { path: 'nhs', component: RequestAccessNhsComponent },
+      { path: 'general', component: RequestAccessGeneralComponent },
+    ],
   },
   {
     path: '',
