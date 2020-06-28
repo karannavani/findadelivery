@@ -18,11 +18,9 @@ export class RegisterComponent implements OnInit {
 
   ngOnInit(): void {
     this.checkForInvite();
-    console.log('invite exists', this.inviteCode);
   }
 
   checkForInvite(): void {
-    // console.log(this.route.params);
     this.route.params.subscribe(
       (params) => (this.inviteCode = params.inviteCode)
     );

@@ -16,6 +16,5 @@ export class InviteComponent implements OnInit {
 
   next(): void {
     this.router.navigate(['register', { inviteCode: this.inviteCode.value }]);
-    // this.router.navigate(['dashboard', { inviteCode: this.inviteCode }]);
   }
 }

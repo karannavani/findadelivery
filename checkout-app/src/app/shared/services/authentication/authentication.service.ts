@@ -20,11 +20,7 @@ export class AuthenticationService {
     this.afAuth.onAuthStateChanged((user) => {
       if (user) {
         // User is signed in.
-        console.log('there is a user', user);
         this.userDetails = user;
-      } else {
-        console.log('user is signed out');
-        // User is signed out.
       }
     });
   }
@@ -81,8 +77,6 @@ export class AuthenticationService {
         )
         .get()
         .subscribe((snapshot) => {
-          console.log('docs are', snapshot.docs);
-
           this.firestore
             .doc(`invites/${snapshot.docs[0].id}`)
             .update({ registered: true });
