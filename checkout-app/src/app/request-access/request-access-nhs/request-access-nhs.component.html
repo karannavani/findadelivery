@@ -1,12 +1,18 @@
 <div class="row m-0">
-  <div class="col-12 col-lg-5">
-    <div class="form-group">
-      <label for="email">What is your NHS email?</label>
-      <small id="emailHelp" class="form-text text-muted"
-        >This email will only be used to send you an invitation code. You will
-        be able to sign up with a different email when you receive an
-        invite.</small
+  <div class="col-12 col-lg-5 mt-4">
+    <p>
+      <strong>
+        If you work for the NHS, sign up with your NHS email and skip the
+        waiting list.</strong
       >
+    </p>
+    <p>
+      This email will only be used to send you an invitation code. You will be
+      able to sign up with a different email when you receive an invite.
+    </p>
+    <hr />
+    <div class="form-group" *ngIf="!submitted">
+      <label for="email"><strong>What is your NHS email?</strong></label>
 
       <input
         type="email"
@@ -17,8 +23,27 @@
       />
       <small *ngIf="error" class="text-danger">{{ error }}</small>
     </div>
-    <button type="button" class="btn btn-primary my-3" (click)="onSubmit()">
+    <button
+      *ngIf="!submitted"
+      type="button"
+      class="btn btn-primary my-3"
+      (click)="onSubmit()"
+    >
       Submit
     </button>
+  </div>
+  <div *ngIf="submitted" class="alert alert-secondary row m-0" role="alert">
+    <div class="col-12 text-center">
+      <h5 class="alert-heading">Thank you!</h5>
+      Your invite has been sent to <strong>{{ email.value }}</strong>
+    </div>
+    <p></p>
+    <div class="col-12 col-md-6 col-lg-5 my-4 mx-auto">
+      <img
+        src="../../../assets/register/new_message.svg"
+        class="img-fluid searching"
+        alt="illustration of an envelope with balloons tied to it"
+      />
+    </div>
   </div>
 </div>
