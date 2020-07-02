@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Subscription, Subject, Observable } from 'rxjs';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { filter } from 'rxjs/operators';
+import { generate } from 'voucher-code-generator';
 
 @Injectable({
   providedIn: 'root',
@@ -24,7 +25,6 @@ export class RequestAccessService {
             res.docs.filter((doc) => doc.data().email === email).length
               ? emailExists.next(true)
               : emailExists.next(false);
-            // res.docs
           } else {
             emailExists.next(false);
           }
@@ -33,5 +33,26 @@ export class RequestAccessService {
     return emailExists.asObservable();
   }
 
-  completeSignup(): void {}
+  completeSignup(email: string, collection: string): void {
+    const created = new Date().toISOString();
+    const invite = '';
+    const data = { created, email, invite };
+    this.generateInvite();
+    // this.firestore.collection(collection).add(data);
+  }
+
+  generateInvite(): void {
+    // generate({
+    //   length: 5,
+    //   count: 1
+    // });
+    console.log(
+      generate({
+        length: 5,
+        count: 1,
+      })
+    );
+    let inviteCode, registered, sendInvite;
+    const data = { inviteCode, registered, sendInvite };
+  }
 }

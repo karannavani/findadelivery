@@ -30,6 +30,10 @@ export class RequestAccessNhsComponent implements OnInit, OnDestroy {
             } else {
               this.error = null;
               this.submitted = true;
+              this.requestAccessService.completeSignup(
+                this.email.value,
+                'nhsSignups'
+              );
             }
           })
       );
