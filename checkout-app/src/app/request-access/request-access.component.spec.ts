@@ -8,9 +8,8 @@ describe('RequestAccessComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ RequestAccessComponent ]
-    })
-    .compileComponents();
+      declarations: [RequestAccessComponent],
+    }).compileComponents();
   }));
 
   beforeEach(() => {
