@@ -3,7 +3,13 @@
     <div class="col-12 col-lg-5">
       <h3>Enter your invite code</h3>
       <div class="form-group">
-        <input type="text" class="form-control" [formControl]="inviteCode" />
+        <input
+          type="text"
+          class="form-control"
+          [formControl]="inviteCode"
+          [ngClass]="{ 'is-invalid': error }"
+        />
+        <small *ngIf="error" class="text-danger">{{ error }}</small>
       </div>
       <button type="button" class="btn btn-primary my-3" (click)="next()">
         Next
