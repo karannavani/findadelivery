@@ -43,8 +43,10 @@ export class RequestAccessNhsComponent implements OnInit, OnDestroy {
               this.error = null;
               this.submitted = true;
             } else {
-              this.error =
-                'Unable to complete your signup at the moment, please try again later';
+              if (!this.error.includes('already exists')) {
+                this.error =
+                  'Unable to complete your signup at the moment, please try again later';
+              }
               this.submitted = false;
             }
           })
