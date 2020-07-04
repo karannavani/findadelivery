@@ -1,0 +1,38 @@
+<div class="row m-0">
+  <div class="col-12 col-lg-5 mt-4">
+    <p>
+      We're currently rolling out invites to a limited group of users. Sign up
+      to join the waiting list.
+    </p>
+    <hr />
+    <div class="form-group">
+      <label for="email"><strong>What is your email address?</strong></label>
+
+      <input
+        type="email"
+        class="form-control"
+        [formControl]="email"
+        placeholder="example@gmail.com"
+        [ngClass]="{ 'is-invalid': error }"
+      />
+      <small *ngIf="error" class="text-danger">{{ error }}</small>
+    </div>
+    <button type="button" class="btn btn-primary my-3" (click)="onSubmit()">
+      Submit
+    </button>
+  </div>
+  <div *ngIf="submitted" class="alert alert-secondary row m-0" role="alert">
+    <div class="col-12 text-center">
+      <h5 class="alert-heading">Thank you!</h5>
+      Your invite will be sent to <strong>{{ email.value }}</strong>
+    </div>
+    <p></p>
+    <div class="col-12 col-md-6 col-lg-5 my-4 mx-auto">
+      <img
+        src="../../../assets/register/new_message.svg"
+        class="img-fluid searching"
+        alt="illustration of an envelope with balloons tied to it"
+      />
+    </div>
+  </div>
+</div>

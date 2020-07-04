@@ -17,8 +17,7 @@
       </p>
 
       <p>
-        This is completely free for all key workers and vulnerable people to
-        support them in these challenging times.
+        If you are an NHS worker, this service will be free to use, forever.
       </p>
     </div>
 
@@ -38,7 +37,7 @@
       <div class="row">
         <div class="col-12 col-lg-auto">
           <button
-            (click)="onClickRegister()"
+            routerLink="/request-access"
             class="btn btn-primary mt-3 mr-lg-3 w-100"
           >
             Request access
@@ -46,11 +45,7 @@
         </div>
 
         <div class="col-12 col-lg-auto">
-          <button
-            (click)="onClickSignIn()"
-            class="btn btn-secondary mt-3 w-100"
-            routerLink="/dashboard"
-          >
+          <button class="btn btn-secondary mt-3 w-100" routerLink="/dashboard">
             I already have access
           </button>
         </div>
@@ -101,36 +96,6 @@
           you.
         </p>
       </div>
-    </div>
-  </div>
-</div>
-
-<div class="container" id="section-key-worker">
-  <div class="row">
-    <div class="col-12 col-lg-6">
-      <h2>Who is a key worker?</h2>
-      <p>
-        Key workers are people whose jobs are critical to the health of the
-        nation during the COVID-19 pandemic and public lockdown. The UK
-        Government is keen to ensure that they can continue to carry out their
-        jobs with as little restriction as possible. These include:
-      </p>
-
-      <ul>
-        <li>Health and social care workers</li>
-        <li>Education and childcare staff</li>
-        <li>Utility workers</li>
-        <li>Public transport staff</li>
-      </ul>
-
-      <p>
-        You can find an official list of key workers
-        <a
-          href="https://www.gov.uk/government/publications/coronavirus-covid-19-maintaining-educational-provision/guidance-for-schools-colleges-and-local-authorities-on-maintaining-educational-provision"
-          target="blank"
-          >here</a
-        >.
-      </p>
     </div>
   </div>
 </div>

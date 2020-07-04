@@ -72,7 +72,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         .doc(`users/${this.authenticationService.getUserId()}`)
         .get()
         .subscribe((res) => {
-          if (res.data().postcode) {
+          if (res.exists && res.data().postcode) {
             this.userPostcode = res.data().postcode;
             this.postcode.setValue(this.userPostcode);
           }

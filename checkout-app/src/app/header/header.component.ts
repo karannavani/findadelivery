@@ -26,7 +26,6 @@ export class HeaderComponent implements OnInit {
     const targetIds = {
       howItWorks: '#section-hiw',
       getInTouch: '#section-contact',
-      keyWorker: '#section-key-worker',
     };
     const currentlyOnHome = this.router.url.includes(homeRoute);
     const argsForScrollService = {

@@ -61,14 +61,6 @@ span {
 .alert {
   margin-top: 1rem;
   border: none;
-
-  cite {
-    font-size: 0.6rem;
-
-    a {
-      color: #553ed8;
-    }
-  }
 }
 
 .btn {
@@ -101,9 +93,10 @@ span {
   background-color: #b6e5ce;
 
   &:hover,
-  &:active {
+  &:active,
+  &:focus {
     color: #002b22;
-    background-color: #a0d2ba;
+    background-color: #83bea2;
   }
 }
 
