@@ -50,16 +50,15 @@ import { RequestAccessGeneralComponent } from './request-access/request-access-g
   providers: [
     AuthGuard,
     Title,
-    {
-      provide: SETTINGS,
-      useValue: environment.production
-        ? undefined
-        : {
-            host: 'localhost:8080',
-            ssl: false,
-          },
-    },
-    // K.N – let's just toggle this flag manually for when we want to use local server,
+    // {
+    //   provide: SETTINGS,
+    //   useValue: environment.production
+    //   ? undefined
+    //   : {
+    //     host: 'localhost:8080',
+    //     ssl: false,
+    //   },
+    // }, // K.N – let's just toggle this flag manually for when we want to use local server,
     // will need to investigate why it's not working in production
   ],
   bootstrap: [AppComponent],
