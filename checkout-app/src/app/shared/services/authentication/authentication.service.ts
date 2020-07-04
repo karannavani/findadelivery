@@ -20,7 +20,6 @@ export class AuthenticationService {
       if (user) {
         // User is signed in.
         this.userDetails = user;
-        this.handleInviteCode('3ZPhe');
       }
     });
   }
