@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { auth } from 'firebase';
-import { Observable, Subscription } from 'rxjs';
 import { Router } from '@angular/router';
-import { AngularFirestore } from '@angular/fire/firestore';
+import { AngularFirestore, DocumentReference } from '@angular/fire/firestore';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -19,31 +19,26 @@ export class AuthenticationService {
     this.afAuth.onAuthStateChanged((user) => {
       if (user) {
         // User is signed in.
-        console.log('there is a user', user);
         this.userDetails = user;
-      } else {
-        console.log('user is signed out');
-        // User is signed out.
       }
     });
   }
 
   // Sign in with Google
-  GoogleAuth() {
-    return this.AuthLogin(new auth.GoogleAuthProvider());
+  GoogleAuth(inviteCode?: string) {
+    return this.AuthLogin(new auth.GoogleAuthProvider(), inviteCode);
   }
 
   // Auth logic to run auth providers
-  AuthLogin(provider) {
+  AuthLogin(provider, inviteCode?: string) {
     return this.afAuth
       .setPersistence(auth.Auth.Persistence.LOCAL)
       .then(() => {
         this.afAuth
           .signInWithPopup(provider)
           .then((result) => {
-            console.log('You have been successfully logged in!', result);
             this.userDetails = result.user;
-            this.checkIfUserExists(this.userDetails.uid);
+            this.checkIfUserExists(this.userDetails.uid, inviteCode);
             this.router.navigate(['dashboard']);
           })
           .catch((error) => {
@@ -72,17 +67,62 @@ export class AuthenticationService {
     });
   }
 
-  checkIfUserExists(id: string) {
+  handleInviteCode(inviteCode: string) {
+    const registeredBy = this.firestore
+      .collection('users')
+      .doc(this.userDetails.uid).ref;
+
+    this.firestore
+      .collection('invites', (ref) => ref.where('inviteCode', '==', inviteCode))
+      .get()
+      .subscribe((snapshot) => {
+        if (!snapshot.empty) {
+          this.firestore
+            .doc(`invites/${snapshot.docs[0].id}`)
+            .update({
+              registered: true,
+              registeredBy,
+            })
+            .then(() => this.addMemberType(snapshot.docs[0].ref));
+        }
+      });
+  }
+
+  addMemberType(inviteRef: DocumentReference) {
+    this.firestore
+      .doc(inviteRef)
+      .get()
+      .pipe(
+        map((doc) => doc.data().collection),
+        map((collection) => {
+          const userType = collection === 'nhsSignups' ? 'nhs' : 'general';
+          this.firestore
+            .doc(`users/${this.userDetails.uid}`)
+            .update({ userType });
+        })
+      )
+      .subscribe();
+  }
+
+  checkIfUserExists(id: string, inviteCode?: string) {
     this.firestore
       .doc(`users/${id}`)
       .get()
-      .subscribe((res) => {
-        if (!res.exists) {
-          this.firestore.collection('users').doc(id).set({
-            userId: this.getUserId(),
-            displayName: this.userDetails.displayName,
-            email: this.userDetails.email,
-          });
+      .subscribe((doc) => {
+        if (!doc.exists) {
+          this.firestore
+            .collection('users')
+            .doc(id)
+            .set({
+              userId: this.getUserId(),
+              displayName: this.userDetails.displayName,
+              email: this.userDetails.email,
+            })
+            .then(() => {
+              if (inviteCode) {
+                this.handleInviteCode(inviteCode);
+              }
+            });
         }
       });
   }

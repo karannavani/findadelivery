@@ -16,6 +16,11 @@ import { LoginComponent } from './login/login.component';
 import { HeaderComponent } from './header/header.component';
 import { AuthGuard } from './shared/guards/auth.guard';
 import { FooterComponent } from './footer/footer.component';
+import { InviteComponent } from './invite/invite.component';
+import { RegisterComponent } from './register/register.component';
+import { RequestAccessComponent } from './request-access/request-access.component';
+import { RequestAccessNhsComponent } from './request-access/request-access-nhs/request-access-nhs.component';
+import { RequestAccessGeneralComponent } from './request-access/request-access-general/request-access-general.component';
 
 @NgModule({
   declarations: [
@@ -25,6 +30,11 @@ import { FooterComponent } from './footer/footer.component';
     LoginComponent,
     HeaderComponent,
     FooterComponent,
+    InviteComponent,
+    RegisterComponent,
+    RequestAccessComponent,
+    RequestAccessNhsComponent,
+    RequestAccessGeneralComponent,
   ],
   imports: [
     BrowserModule,
