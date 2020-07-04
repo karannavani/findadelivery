@@ -29,7 +29,7 @@ export class RequestAccessService {
 
   completeSignup(email: string, collection: string): Observable<boolean> {
     const signupCompleted = new Subject<boolean>();
-    this.createInvite(email).subscribe((inviteCreated) => {
+    this.createInvite(collection).subscribe((inviteCreated) => {
       if (inviteCreated) {
         const created = new Date().toISOString();
         const invite = inviteCreated;
@@ -45,7 +45,7 @@ export class RequestAccessService {
     return signupCompleted.asObservable();
   }
 
-  createInvite(email: string): Observable<DocumentReference | boolean> {
+  createInvite(collection: string): Observable<DocumentReference | boolean> {
     const inviteCreated = new Subject<DocumentReference | boolean>();
 
     const inviteCode = generate({
@@ -62,6 +62,7 @@ export class RequestAccessService {
           registered: false,
           sendInvite: false,
           created,
+          collection,
         };
         try {
           this.firestore
@@ -76,7 +77,7 @@ export class RequestAccessService {
         }
       } else {
         console.error('invite code already exists');
-        this.createInvite(email);
+        this.createInvite(collection);
       }
     });
 

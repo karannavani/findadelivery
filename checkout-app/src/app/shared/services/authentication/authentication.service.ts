@@ -1,10 +1,9 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { auth } from 'firebase';
-import { Observable, Subscription } from 'rxjs';
 import { Router } from '@angular/router';
-import { AngularFirestore } from '@angular/fire/firestore';
-import { reduce } from 'rxjs/operators';
+import { AngularFirestore, DocumentReference } from '@angular/fire/firestore';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -21,6 +20,7 @@ export class AuthenticationService {
       if (user) {
         // User is signed in.
         this.userDetails = user;
+        this.handleInviteCode('3ZPhe');
       }
     });
   }
@@ -39,8 +39,7 @@ export class AuthenticationService {
           .signInWithPopup(provider)
           .then((result) => {
             this.userDetails = result.user;
-            this.handleInviteCode(inviteCode);
-            this.checkIfUserExists(this.userDetails.uid);
+            this.checkIfUserExists(this.userDetails.uid, inviteCode);
             this.router.navigate(['dashboard']);
           })
           .catch((error) => {
@@ -70,31 +69,61 @@ export class AuthenticationService {
   }
 
   handleInviteCode(inviteCode: string) {
-    if (inviteCode) {
-      this.firestore
-        .collection('invites', (ref) =>
-          ref.where('inviteCode', '==', inviteCode)
-        )
-        .get()
-        .subscribe((snapshot) => {
+    const registeredBy = this.firestore
+      .collection('users')
+      .doc(this.userDetails.uid).ref;
+
+    this.firestore
+      .collection('invites', (ref) => ref.where('inviteCode', '==', inviteCode))
+      .get()
+      .subscribe((snapshot) => {
+        if (!snapshot.empty) {
           this.firestore
             .doc(`invites/${snapshot.docs[0].id}`)
-            .update({ registered: true });
-        });
-    }
+            .update({
+              registered: true,
+              registeredBy,
+            })
+            .then(() => this.addMemberType(snapshot.docs[0].ref));
+        }
+      });
   }
 
-  checkIfUserExists(id: string) {
+  addMemberType(inviteRef: DocumentReference) {
+    this.firestore
+      .doc(inviteRef)
+      .get()
+      .pipe(
+        map((doc) => doc.data().collection),
+        map((collection) => {
+          const userType = collection === 'nhsSignups' ? 'nhs' : 'general';
+          this.firestore
+            .doc(`users/${this.userDetails.uid}`)
+            .update({ userType });
+        })
+      )
+      .subscribe();
+  }
+
+  checkIfUserExists(id: string, inviteCode?: string) {
     this.firestore
       .doc(`users/${id}`)
       .get()
-      .subscribe((res) => {
-        if (!res.exists) {
-          this.firestore.collection('users').doc(id).set({
-            userId: this.getUserId(),
-            displayName: this.userDetails.displayName,
-            email: this.userDetails.email,
-          });
+      .subscribe((doc) => {
+        if (!doc.exists) {
+          this.firestore
+            .collection('users')
+            .doc(id)
+            .set({
+              userId: this.getUserId(),
+              displayName: this.userDetails.displayName,
+              email: this.userDetails.email,
+            })
+            .then(() => {
+              if (inviteCode) {
+                this.handleInviteCode(inviteCode);
+              }
+            });
         }
       });
   }
