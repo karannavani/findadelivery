@@ -119,10 +119,10 @@ const checkSainsburys = functions
 
 const workers = {
   asdaDeliveryScan: async (postcode, email, docId) => {
-    // const url =
-    //   'https://europe-west2-checkout-app-uk.cloudfunctions.net/checkAsda';
+    const url =
+      'https://europe-west2-checkout-app-uk.cloudfunctions.net/checkAsda';
 
-    const url = 'http://localhost:5001/checkout-app-uk/europe-west2/checkAsda';
+    // const url = 'http://localhost:5001/checkout-app-uk/europe-west2/checkAsda';
 
     console.log('hit asda worker with', postcode, email, docId);
     return await fetch(url, {
@@ -135,11 +135,11 @@ const workers = {
     });
   },
   icelandDeliveryScan: async (postcode, email, docId) => {
-    // const url =
-    //   'https://europe-west2-checkout-app-uk.cloudfunctions.net/checkIceland';
-
     const url =
-      'http://localhost:5001/checkout-app-uk/europe-west2/checkIceland';
+      'https://europe-west2-checkout-app-uk.cloudfunctions.net/checkIceland';
+
+    // const url =
+    //   'http://localhost:5001/checkout-app-uk/europe-west2/checkIceland';
 
     console.log('hit iceland worker with', postcode, email, docId);
     return await fetch(url, {
@@ -152,11 +152,11 @@ const workers = {
     });
   },
   sainsburysDeliveryScan: async (postcode, email, docId) => {
-    // const url =
-    //   'https://europe-west2-checkout-app-uk.cloudfunctions.net/checkSainsburys';
-
     const url =
-      'http://localhost:5001/checkout-app-uk/europe-west2/checkSainsburys';
+      'https://europe-west2-checkout-app-uk.cloudfunctions.net/checkSainsburys';
+
+    // const url =
+    //   'http://localhost:5001/checkout-app-uk/europe-west2/checkSainsburys';
 
     console.log('hit sainsburys worker with', postcode, email, docId);
     return await fetch(url, {
