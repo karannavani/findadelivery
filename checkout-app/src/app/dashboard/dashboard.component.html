@@ -9,11 +9,12 @@
         <small>
           <span
             ><strong
-              >We ran into some issues with your recent search:
+              >We ran into some issues with your recent search for
+              {{ error.supermarket }}:
             </strong></span
           >
         </small>
-        <small>{{ error }}</small>
+        <small>{{ error.errorMessage }}</small>
       </div>
       <button
         class="btn btn-secondary"
