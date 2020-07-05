@@ -34,23 +34,13 @@ export class AuthenticationService {
   // Auth logic to run auth providers
   AuthLogin(provider, inviteCode?: string) {
     return this.afAuth
-      .setPersistence(auth.Auth.Persistence.LOCAL)
-      .then(() => {
-        this.afAuth
-          .signInWithPopup(provider)
-          .then((result) => {
-            this.userDetails = result.user;
-            this.checkIfUserExists(this.userDetails.uid, inviteCode);
-          })
-          .catch((error) => {
-            console.log(error);
-          });
+      .signInWithPopup(provider)
+      .then((result) => {
+        this.userDetails = result.user;
+        this.checkIfUserExists(this.userDetails.uid, inviteCode);
       })
       .catch((error) => {
-        // Handle Errors here.
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log('Error', errorCode, errorMessage);
+        console.log(error);
       });
   }
 
@@ -125,15 +115,30 @@ export class AuthenticationService {
             })
             .then(() => {
               this.handleInviteCode(inviteCode);
-              this.router.navigate(['dashboard']);
+              this.handleLogin();
             });
         } else if (doc.exists) {
-          this.router.navigate(['dashboard']);
+          this.handleLogin();
         } else {
+          this.afAuth.signOut();
           this.registerError.next(
             'Sorry, this email was not found in our records. Contact us at support@findadelivery.com for help.'
           );
         }
+      });
+  }
+
+  handleLogin() {
+    this.afAuth
+      .setPersistence(auth.Auth.Persistence.LOCAL)
+      .then(() => {
+        this.router.navigate(['dashboard']);
+      })
+      .catch((error) => {
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log('Error', errorCode, errorMessage);
       });
   }
 }
