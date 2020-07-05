@@ -26,6 +26,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   subscriptions = new Subscription();
   selectedSupermarket = [];
   userRef: any;
+  errors = [];
   // recentSearches = [];
   // activeSearches = [];
 
@@ -33,6 +34,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.getUserRef();
     this.checkIfPostcodeExists();
     this.isSearchInProgress();
+    this.checkForErrors();
     // this.getRecentSearches();
   }
 
@@ -143,6 +145,39 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.selectedSupermarket.splice(index, 1);
     } else {
       this.selectedSupermarket.push(supermarket);
+    }
+  }
+
+  dismissError() {}
+
+  checkForErrors() {
+    this.subscriptions.add(
+      this.firestore
+        .collection('jobs', (ref) =>
+          ref
+            .where('user', '==', this.userRef)
+            .where('state', '==', 'Error')
+            .where('dismissed', '==', false)
+        )
+        .valueChanges()
+        .subscribe((res) => {
+          if (res.length) {
+            res.forEach((job: any) => {
+              this.formatErrorMessage(job.error);
+            });
+          }
+        })
+    );
+  }
+
+  formatErrorMessage(error: string) {
+    console.log('received error', error);
+
+    if (error.includes('does not deliver to this address')) {
+      let errorMessage = error.split(':')[2].trim();
+      const end = errorMessage.indexOf(' at');
+      errorMessage = errorMessage.slice(0, end);
+      this.errors.push(errorMessage);
     }
   }
 
