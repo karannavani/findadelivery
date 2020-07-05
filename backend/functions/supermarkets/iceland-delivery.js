@@ -53,10 +53,10 @@ class IcelandDelivery {
         console.log('No slots currently available');
       }
     } catch (error) {
+      console.log('error is', error);
       await db
         .doc(`jobs/${this.docId}`)
         .update({ state: 'Error', error: error.message, dismissed: false });
-      console.log('error is', error.message);
     }
 
     return this.res.status(200).end();
