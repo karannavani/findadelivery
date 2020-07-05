@@ -4,12 +4,14 @@ import { auth } from 'firebase';
 import { Router } from '@angular/router';
 import { AngularFirestore, DocumentReference } from '@angular/fire/firestore';
 import { map } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthenticationService {
   userDetails = null;
+  private registerError = new Subject<string>();
 
   constructor(
     public afAuth: AngularFireAuth, // Inject Firebase auth service
@@ -39,7 +41,6 @@ export class AuthenticationService {
           .then((result) => {
             this.userDetails = result.user;
             this.checkIfUserExists(this.userDetails.uid, inviteCode);
-            this.router.navigate(['dashboard']);
           })
           .catch((error) => {
             console.log(error);
@@ -55,6 +56,10 @@ export class AuthenticationService {
 
   getUserId() {
     return this.userDetails.uid;
+  }
+
+  getRegisterError() {
+    return this.registerError.asObservable();
   }
 
   isAuthenticated() {
@@ -109,7 +114,7 @@ export class AuthenticationService {
       .doc(`users/${id}`)
       .get()
       .subscribe((doc) => {
-        if (!doc.exists) {
+        if (!doc.exists && inviteCode) {
           this.firestore
             .collection('users')
             .doc(id)
@@ -119,10 +124,15 @@ export class AuthenticationService {
               email: this.userDetails.email,
             })
             .then(() => {
-              if (inviteCode) {
-                this.handleInviteCode(inviteCode);
-              }
+              this.handleInviteCode(inviteCode);
+              this.router.navigate(['dashboard']);
             });
+        } else if (doc.exists) {
+          this.router.navigate(['dashboard']);
+        } else {
+          this.registerError.next(
+            'Sorry, this email was not found in our records. Contact us at support@findadelivery.com for help.'
+          );
         }
       });
   }

@@ -9,3 +9,21 @@
     Sign up with Google
   </p>
 </div>
+
+<div class="container">
+  <div class="row mx-0 mt-0 mb-4">
+    <div class="col-12 col-lg-6 mx-0 mt-0 mb-5 p-0" *ngIf="error">
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <small>{{ error }}</small>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="alert"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
