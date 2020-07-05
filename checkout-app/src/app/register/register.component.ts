@@ -39,5 +39,7 @@ export class RegisterComponent implements OnInit, OnDestroy {
     this.authService.GoogleAuth(this.inviteCode);
   }
 
-  ngOnDestroy(): void {}
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
 }
