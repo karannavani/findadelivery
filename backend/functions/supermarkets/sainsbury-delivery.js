@@ -55,6 +55,9 @@ class SainsburysDelivery {
         console.log('Not slots currently available');
       }
     } catch (error) {
+      await db
+        .doc(`jobs/${this.docId}`)
+        .update({ state: 'Error', error: error.message, dismissed: false });
       console.log(error);
     }
 

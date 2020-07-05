@@ -8,21 +8,25 @@
           <img
             class="google-icon-svg"
             src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
-            />
+          />
         </div>
         <p class="btn-text" (click)="googleLogin()">
-        Sign in with Google
+          Sign in with Google
         </p>
       </div>
     </div>
-
-    <div class="col-12 text-center">
-      <img
-        src="../../assets/kingdom-sign-in.png"
-        class="img-fluid"
-        alt="Key unlocking a padlock"
-        width="400vw"
-        />
+    <div class="col-12 col-lg-6 mt-0 mb-5 p-0 mx-auto" *ngIf="error">
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <small>{{ error }}</small>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="alert"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>

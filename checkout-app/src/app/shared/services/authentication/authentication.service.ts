@@ -4,12 +4,14 @@ import { auth } from 'firebase';
 import { Router } from '@angular/router';
 import { AngularFirestore, DocumentReference } from '@angular/fire/firestore';
 import { map } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthenticationService {
   userDetails = null;
+  private registerError = new Subject<string>();
 
   constructor(
     public afAuth: AngularFireAuth, // Inject Firebase auth service
@@ -32,29 +34,22 @@ export class AuthenticationService {
   // Auth logic to run auth providers
   AuthLogin(provider, inviteCode?: string) {
     return this.afAuth
-      .setPersistence(auth.Auth.Persistence.LOCAL)
-      .then(() => {
-        this.afAuth
-          .signInWithPopup(provider)
-          .then((result) => {
-            this.userDetails = result.user;
-            this.checkIfUserExists(this.userDetails.uid, inviteCode);
-            this.router.navigate(['dashboard']);
-          })
-          .catch((error) => {
-            console.log(error);
-          });
+      .signInWithPopup(provider)
+      .then((result) => {
+        this.userDetails = result.user;
+        this.checkIfUserExists(this.userDetails.uid, inviteCode);
       })
       .catch((error) => {
-        // Handle Errors here.
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log('Error', errorCode, errorMessage);
+        console.log(error);
       });
   }
 
   getUserId() {
     return this.userDetails.uid;
+  }
+
+  getRegisterError() {
+    return this.registerError.asObservable();
   }
 
   isAuthenticated() {
@@ -109,7 +104,7 @@ export class AuthenticationService {
       .doc(`users/${id}`)
       .get()
       .subscribe((doc) => {
-        if (!doc.exists) {
+        if (!doc.exists && inviteCode) {
           this.firestore
             .collection('users')
             .doc(id)
@@ -119,11 +114,31 @@ export class AuthenticationService {
               email: this.userDetails.email,
             })
             .then(() => {
-              if (inviteCode) {
-                this.handleInviteCode(inviteCode);
-              }
+              this.handleInviteCode(inviteCode);
+              this.handleLogin();
             });
+        } else if (doc.exists) {
+          this.handleLogin();
+        } else {
+          this.afAuth.signOut();
+          this.registerError.next(
+            'Sorry, this email was not found in our records. Contact us at support@findadelivery.com for help.'
+          );
         }
+      });
+  }
+
+  handleLogin() {
+    this.afAuth
+      .setPersistence(auth.Auth.Persistence.LOCAL)
+      .then(() => {
+        this.router.navigate(['dashboard']);
+      })
+      .catch((error) => {
+        // Handle Errors here.
+        const errorCode = error.code;
+        const errorMessage = error.message;
+        console.log('Error', errorCode, errorMessage);
       });
   }
 }

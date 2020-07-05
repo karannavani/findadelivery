@@ -63,7 +63,6 @@ class AsdaDelivery {
     };
 
     try {
-      console.log('Making call...');
       const res = await axios.post(
         'https://groceries.asda.com/api/v3/slot/view',
         {
@@ -74,6 +73,10 @@ class AsdaDelivery {
       const slotData = res.data.data;
       this.getSlots(slotData);
     } catch (error) {
+      await db
+        .doc(`jobs/${this.docId}`)
+        .update({ state: 'Error', error: error.message, dismissed: false });
+
       console.log({ error });
     }
   }
