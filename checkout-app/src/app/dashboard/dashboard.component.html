@@ -1,6 +1,31 @@
 <div class="container">
-  <div class="row m-0">
-    <div id="postcode-entry col-12 col-lg-8 col-md-7">
+  <div class="row mx-0 mt-0 mb-4">
+    <div class="col-12 col-lg-6 mx-0 mt-0 mb-5 p-0" *ngIf="errors.length">
+      <div
+        class="alert alert-warning alert-dismissible fade show"
+        role="alert"
+        *ngFor="let error of errors"
+      >
+        <small>
+          <span
+            ><strong
+              >We ran into some issues with your recent search for
+              {{ error.supermarket }}:
+            </strong></span
+          >
+        </small>
+        <small>{{ error.errorMessage }}</small>
+      </div>
+      <button
+        class="btn btn-secondary"
+        type="button"
+        aria-label="Dismiss"
+        (click)="dismissError()"
+      >
+        <small> Dismiss</small>
+      </button>
+    </div>
+    <div class="postcode-entry col-12 col-lg-8 col-md-7 m-0 p-0">
       <h3>
         What's your postcode?
       </h3>

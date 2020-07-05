@@ -6,6 +6,7 @@ import { FormControl } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { AngularFirestore } from '@angular/fire/firestore';
 import { Job } from './job-interace';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-dashboard',
@@ -26,6 +27,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   subscriptions = new Subscription();
   selectedSupermarket = [];
   userRef: any;
+  errors = [];
   // recentSearches = [];
   // activeSearches = [];
 
@@ -33,6 +35,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.getUserRef();
     this.checkIfPostcodeExists();
     this.isSearchInProgress();
+    this.checkForErrors();
     // this.getRecentSearches();
   }
 
@@ -41,6 +44,8 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   scheduleJob() {
+    this.dismissError();
+
     this.selectedSupermarket.forEach((supermarket) => {
       if (this.userPostcode && this.userPostcode !== this.postcode.value) {
         this.firestore
@@ -56,7 +61,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         worker: `${supermarket}DeliveryScan`,
       });
     });
-
     this.searchInProgress = true;
   }
 
@@ -143,6 +147,69 @@ export class DashboardComponent implements OnInit, OnDestroy {
       this.selectedSupermarket.splice(index, 1);
     } else {
       this.selectedSupermarket.push(supermarket);
+    }
+  }
+
+  dismissError() {
+    this.subscriptions.add(
+      this.firestore
+        .collection('jobs', (ref) =>
+          ref
+            .where('user', '==', this.userRef)
+            .where('state', '==', 'Error')
+            .where('dismissed', '==', false)
+        )
+        .get()
+        .pipe(
+          map((snapshot) =>
+            snapshot.docs.forEach((doc) => {
+              this.firestore
+                .doc(doc.ref)
+                .update({ dismissed: true })
+                .then(() => (this.errors = []));
+            })
+          )
+        )
+        .subscribe()
+    );
+  }
+
+  checkForErrors() {
+    this.subscriptions.add(
+      this.firestore
+        .collection('jobs', (ref) =>
+          ref
+            .where('user', '==', this.userRef)
+            .where('state', '==', 'Error')
+            .where('dismissed', '==', false)
+        )
+        .valueChanges()
+        .subscribe((res) => {
+          if (res.length) {
+            this.errors = [];
+            res.forEach((job: any) => {
+              this.formatErrorMessage(job.error, job.store);
+            });
+          }
+        })
+    );
+  }
+
+  formatErrorMessage(error: string, store: string) {
+    const supermarket = this.formatStore(store);
+    let errorMessage;
+    if (
+      error.includes('does not deliver to this address') ||
+      error.includes('Invalid postcode')
+    ) {
+      errorMessage = error.split(':')[2].trim();
+      const end = errorMessage.indexOf(' at');
+      errorMessage = errorMessage.slice(0, end);
+      this.errors.push({ errorMessage, supermarket });
+    } else {
+      errorMessage =
+        'The cause is unknown. We are looking into this. Feel free to contact us at support@findadelivery.com for help';
+      this.errors.push({ errorMessage, supermarket });
     }
   }
 

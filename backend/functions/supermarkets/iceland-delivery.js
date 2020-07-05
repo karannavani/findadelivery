@@ -53,7 +53,10 @@ class IcelandDelivery {
         console.log('No slots currently available');
       }
     } catch (error) {
-      console.log(error);
+      console.log('error is', error);
+      await db
+        .doc(`jobs/${this.docId}`)
+        .update({ state: 'Error', error: error.message, dismissed: false });
     }
 
     return this.res.status(200).end();
@@ -97,9 +100,6 @@ class IcelandDelivery {
 
       const slots = this.returnFormattedSlots(availableSlotsObj);
       console.log('slots are', slots);
-
-      // const htmlBody = await page.content();
-      // this.res.send(htmlBody);
 
       await browser.close();
 
