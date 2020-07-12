@@ -1,16 +1,45 @@
-<div class="google-btn mx-auto">
-  <div class="google-icon-wrapper">
-    <img
-      class="google-icon-svg"
-      src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
+<div class="container">
+  <div class="google-btn mx-auto">
+    <div class="google-icon-wrapper">
+      <img
+        class="google-icon-svg"
+        src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
+      />
+    </div>
+    <p class="btn-text" (click)="googleLogin()">
+      Sign up with Google
+    </p>
+  </div>
+  <div class="authBlock mx-auto">
+    <h3>Sign Up</h3>
+    <form [formGroup]="registerForm">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Name"
+        formControlName="name"
+      />
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Email"
+        formControlName="email"
+      />
+      <input
+        type="password"
+        class="form-control"
+        placeholder="Password"
+        formControlName="password"
+      />
+    </form>
+    <input
+      type="button"
+      class="btn btnPrimary"
+      value="Sign Up"
+      (click)="emailSignUp()"
     />
   </div>
-  <p class="btn-text" (click)="googleLogin()">
-    Sign up with Google
-  </p>
-</div>
 
-<div class="container">
   <div class="row mx-0 mt-0 mb-4">
     <div class="col-12 col-lg-6 mx-auto mt-0 mb-5 p-0" *ngIf="error">
       <div class="alert alert-danger alert-dismissible fade show" role="alert">
