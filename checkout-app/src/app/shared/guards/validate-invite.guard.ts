@@ -8,7 +8,7 @@ import {
 } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthenticationService } from '../services/authentication/authentication.service';
-import { map } from 'rxjs/operators';
+import { map, take } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
@@ -26,22 +26,22 @@ export class ValidateInviteGuard implements CanActivate {
     | Promise<boolean | UrlTree>
     | boolean
     | UrlTree {
-    if (!this.router.navigated && next.params.inviteCode) {
-      this.authService.validateInviteCode(next.params.inviteCode);
-      this.authService
-        .getInviteError()
-        .pipe(
-          map((error) => {
-            if (error) {
-              this.router.navigate(['invite']);
-              return false;
-            }
-          })
-        )
-        .subscribe();
-    } else if (!this.router.navigated && !next.params.inviteCode) {
+    if (!this.router.navigated && !next.params.inviteCode) {
       this.router.navigate(['invite']);
       return false;
+    } else if (!this.router.navigated && next.params.inviteCode) {
+      this.authService.validateInviteCode(next.params.inviteCode);
+      return this.authService.getInviteError().pipe(
+        take(1),
+        map((error) => {
+          if (error) {
+            this.router.navigate(['invite']);
+            return false;
+          } else {
+            return true;
+          }
+        })
+      );
     } else {
       return true;
     }

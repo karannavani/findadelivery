@@ -39,10 +39,10 @@ export class AuthenticationService {
         email,
         password
       );
-      result.user.updateProfile({ displayName });
-      this.userDetails = result.user;
-      this.checkIfUserExists(this.userDetails.uid, inviteCode);
-      console.log('You have been successfully registered!', result.user);
+      result.user.updateProfile({ displayName }).then(() => {
+        this.userDetails = result.user;
+        this.checkIfUserExists(this.userDetails.uid, inviteCode);
+      });
     } catch (error) {
       this.registerError.next(error);
     }
@@ -51,10 +51,7 @@ export class AuthenticationService {
   // Sign in with email/password
   async SignIn(email, password) {
     try {
-      const result = await this.afAuth.signInWithEmailAndPassword(
-        email,
-        password
-      );
+      await this.afAuth.signInWithEmailAndPassword(email, password);
       this.router.navigate(['dashboard']);
     } catch (error) {
       window.alert(error.message);
@@ -140,10 +137,13 @@ export class AuthenticationService {
       .get()
       .subscribe((doc) => {
         if (!doc.exists && inviteCode) {
+          const created = new Date().toISOString();
+
           this.firestore
             .collection('users')
             .doc(id)
             .set({
+              created,
               userId: this.getUserId(),
               displayName: this.userDetails.displayName,
               email: this.userDetails.email,
@@ -156,6 +156,7 @@ export class AuthenticationService {
           this.handleLogin();
         } else {
           this.afAuth.signOut();
+          this.afAuth.currentUser.then((user) => user.delete());
           this.registerError.next(
             'Sorry, this email was not found in our records. Contact us at support@findadelivery.com for help.'
           );
@@ -187,7 +188,7 @@ export class AuthenticationService {
         } else if (doc.docs[0].data().registered) {
           this.inviteError.next('This code has already been used');
         } else {
-          this.router.navigate(['register', { inviteCode }]);
+          this.inviteError.next(null);
         }
       });
   }
