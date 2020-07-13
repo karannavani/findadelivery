@@ -1,16 +1,63 @@
-<div class="google-btn mx-auto">
-  <div class="google-icon-wrapper">
-    <img
-      class="google-icon-svg"
-      src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
-    />
-  </div>
-  <p class="btn-text" (click)="googleLogin()">
-    Sign up with Google
-  </p>
-</div>
-
 <div class="container">
+  <div class="row align-items-center justify-content-center m-0">
+    <div class="col-12 col-lg-5">
+      <div class="google-btn row align-items-center m-0">
+        <div class="col-4 d-flex justify-content-end p-0 m-0">
+          <div class="google-icon-wrapper">
+            <img
+              class="google-icon-svg"
+              src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
+            />
+          </div>
+        </div>
+        <div class="col">
+          <p class="btn-text m-0" (click)="googleLogin()">
+            Sign up with Google
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row align-items-center justify-content-center">
+    <div class="authBlock col-12 col-lg-5">
+      <p class="text-center mt-3">or</p>
+      <form [formGroup]="registerForm">
+        <div class="form-group">
+          <input
+            type="text"
+            class="form-control"
+            formControlName="name"
+            placeholder="Full name"
+          />
+        </div>
+        <div class="form-group">
+          <input
+            type="text"
+            class="form-control"
+            formControlName="email"
+            placeholder="Email"
+          />
+        </div>
+        <div class="form-group">
+          <input
+            type="password"
+            class="form-control"
+            formControlName="password"
+            placeholder="Password"
+          />
+        </div>
+      </form>
+      <div class="text-center">
+        <button
+          type="button"
+          class="btn btn-primary w-100"
+          (click)="emailSignUp()"
+        >
+          Create account
+        </button>
+      </div>
+    </div>
+  </div>
   <div class="row mx-0 mt-0 mb-4">
     <div class="col-12 col-lg-6 mx-auto mt-0 mb-5 p-0" *ngIf="error">
       <div class="alert alert-danger alert-dismissible fade show" role="alert">

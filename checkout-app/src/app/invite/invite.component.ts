@@ -1,38 +1,48 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AngularFirestore } from '@angular/fire/firestore';
+import { Subscription } from 'rxjs';
+import { AuthenticationService } from '../shared/services/authentication/authentication.service';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-invite',
   templateUrl: './invite.component.html',
   styleUrls: ['./invite.component.scss'],
 })
-export class InviteComponent implements OnInit {
-  constructor(private router: Router, private firestore: AngularFirestore) {}
+export class InviteComponent implements OnInit, OnDestroy {
+  constructor(
+    private router: Router,
+    private authService: AuthenticationService
+  ) {}
 
   inviteCode = new FormControl();
   error = null;
+  subscriptions = new Subscription();
 
   ngOnInit(): void {}
 
   next(): void {
-    this.firestore
-      .collection('invites', (ref) =>
-        ref.where('inviteCode', '==', this.inviteCode.value)
-      )
-      .get()
-      .subscribe((doc) => {
-        if (doc.empty) {
-          this.error = 'This code is not valid';
-        } else if (doc.docs[0].data().registered) {
-          this.error = 'This code has already been used';
-        } else {
-          this.router.navigate([
-            'register',
-            { inviteCode: this.inviteCode.value },
-          ]);
-        }
-      });
+    this.authService.validateInviteCode(this.inviteCode.value);
+
+    this.subscriptions.add(
+      this.authService
+        .getInviteError()
+        .pipe(
+          map((error) => {
+            error
+              ? (this.error = error)
+              : this.router.navigate([
+                  'register',
+                  { inviteCode: this.inviteCode.value },
+                ]);
+          })
+        )
+        .subscribe()
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 }

@@ -12,6 +12,7 @@ import { Subject } from 'rxjs';
 export class AuthenticationService {
   userDetails = null;
   private registerError = new Subject<string>();
+  private inviteError = new Subject<string>();
 
   constructor(
     public afAuth: AngularFireAuth, // Inject Firebase auth service
@@ -24,6 +25,37 @@ export class AuthenticationService {
         this.userDetails = user;
       }
     });
+  }
+
+  // Sign up with email/password
+  async SignUp(
+    email: string,
+    password,
+    displayName: string,
+    inviteCode: string
+  ) {
+    try {
+      const result = await this.afAuth.createUserWithEmailAndPassword(
+        email,
+        password
+      );
+      result.user.updateProfile({ displayName }).then(() => {
+        this.userDetails = result.user;
+        this.checkIfUserExists(this.userDetails.uid, inviteCode);
+      });
+    } catch (error) {
+      this.registerError.next(error);
+    }
+  }
+
+  // Sign in with email/password
+  async SignIn(email, password) {
+    try {
+      await this.afAuth.signInWithEmailAndPassword(email, password);
+      this.router.navigate(['dashboard']);
+    } catch (error) {
+      this.registerError.next(error);
+    }
   }
 
   // Sign in with Google
@@ -105,10 +137,13 @@ export class AuthenticationService {
       .get()
       .subscribe((doc) => {
         if (!doc.exists && inviteCode) {
+          const created = new Date().toISOString();
+
           this.firestore
             .collection('users')
             .doc(id)
             .set({
+              created,
               userId: this.getUserId(),
               displayName: this.userDetails.displayName,
               email: this.userDetails.email,
@@ -121,6 +156,7 @@ export class AuthenticationService {
           this.handleLogin();
         } else {
           this.afAuth.signOut();
+          this.afAuth.currentUser.then((user) => user.delete());
           this.registerError.next(
             'Sorry, this email was not found in our records. Contact us at support@findadelivery.com for help.'
           );
@@ -140,5 +176,24 @@ export class AuthenticationService {
         const errorMessage = error.message;
         console.log('Error', errorCode, errorMessage);
       });
+  }
+
+  validateInviteCode(inviteCode: string) {
+    this.firestore
+      .collection('invites', (ref) => ref.where('inviteCode', '==', inviteCode))
+      .get()
+      .subscribe((doc) => {
+        if (doc.empty) {
+          this.inviteError.next('This code is not valid');
+        } else if (doc.docs[0].data().registered) {
+          this.inviteError.next('This code has already been used');
+        } else {
+          this.inviteError.next(null);
+        }
+      });
+  }
+
+  getInviteError() {
+    return this.inviteError.asObservable();
   }
 }
