@@ -14,6 +14,7 @@ import { RegisterComponent } from './register/register.component';
 import { RequestAccessComponent } from './request-access/request-access.component';
 import { RequestAccessNhsComponent } from './request-access/request-access-nhs/request-access-nhs.component';
 import { RequestAccessGeneralComponent } from './request-access/request-access-general/request-access-general.component';
+import { ValidateInviteGuard } from './shared/guards/validate-invite.guard';
 
 const routes: Routes = [
   {
@@ -28,6 +29,7 @@ const routes: Routes = [
   {
     path: 'register',
     component: RegisterComponent,
+    canActivate: [ValidateInviteGuard],
   },
   {
     path: 'dashboard',
