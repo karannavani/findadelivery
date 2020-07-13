@@ -31,6 +31,7 @@
       </div>
 
       <div *ngIf="isAuthenticated$ | async" class="navbar-nav">
+        <a class="nav-item nav-link" routerLink="/dashboard">Dashboard</a>
         <a class="nav-item nav-link" routerLink="" (click)="signOut()"
           >Sign out</a
         >

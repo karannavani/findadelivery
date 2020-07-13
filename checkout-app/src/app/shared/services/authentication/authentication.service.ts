@@ -54,7 +54,7 @@ export class AuthenticationService {
       await this.afAuth.signInWithEmailAndPassword(email, password);
       this.router.navigate(['dashboard']);
     } catch (error) {
-      window.alert(error.message);
+      this.registerError.next(error);
     }
   }
 
