@@ -12,7 +12,7 @@ export const environment = {
     storageBucket: 'checkout-app-uk.appspot.com',
     messagingSenderId: '829833888493',
     appId: '1:829833888493:web:d3530a947789cc99bb02e4',
-    // measurementId: 'G-XKXN7FXB6V',
+    measurementId: 'G-XKXN7FXB6V',
   },
 };
 
