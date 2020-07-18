@@ -25,6 +25,7 @@ import { RegisterComponent } from './register/register.component';
 import { RequestAccessComponent } from './request-access/request-access.component';
 import { RequestAccessNhsComponent } from './request-access/request-access-nhs/request-access-nhs.component';
 import { RequestAccessGeneralComponent } from './request-access/request-access-general/request-access-general.component';
+import { PrivacyComponent } from './privacy/privacy.component';
 
 @NgModule({
   declarations: [
@@ -39,6 +40,7 @@ import { RequestAccessGeneralComponent } from './request-access/request-access-g
     RequestAccessComponent,
     RequestAccessNhsComponent,
     RequestAccessGeneralComponent,
+    PrivacyComponent,
   ],
   imports: [
     BrowserModule,

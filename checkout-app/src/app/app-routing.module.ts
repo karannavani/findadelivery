@@ -15,11 +15,16 @@ import { RequestAccessComponent } from './request-access/request-access.componen
 import { RequestAccessNhsComponent } from './request-access/request-access-nhs/request-access-nhs.component';
 import { RequestAccessGeneralComponent } from './request-access/request-access-general/request-access-general.component';
 import { ValidateInviteGuard } from './shared/guards/validate-invite.guard';
+import { PrivacyComponent } from './privacy/privacy.component';
 
 const routes: Routes = [
   {
     path: 'home',
     component: HomeComponent,
+  },
+  {
+    path: 'privacy',
+    component: PrivacyComponent,
   },
   {
     path: 'login',
