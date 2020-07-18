@@ -5,6 +5,8 @@ const { AsdaDelivery } = require('./supermarkets/asda-delivery');
 const { SainsburysDelivery } = require('./supermarkets/sainsbury-delivery');
 const { send } = require('./utils/email-service');
 const { IcelandDelivery } = require('./supermarkets/iceland-delivery');
+const { firestore } = require('firebase-admin');
+const { sendInvite } = require('./utils/invite-sender');
 
 admin.initializeApp();
 const db = admin.firestore();
@@ -117,6 +119,59 @@ const checkSainsburys = functions
     new SainsburysDelivery(postcode, email, docId, res);
   });
 
+const triggerGeneralInvite = functions
+  .region('europe-west2')
+  .runWith({ memory: '2GB', timeoutSeconds: 300 })
+  .firestore.document('generalSignups/{docId}')
+  .onCreate(async (snapshot, context) => {
+    try {
+      const inviteId = await snapshot.data().invite.id;
+      return db.doc(`invites/${inviteId}`).update({ sendInvite: true });
+    } catch (error) {
+      console.log('error on triggerGeneralInvite', error);
+    }
+  });
+
+const triggerNhsInvite = functions
+  .region('europe-west2')
+  .runWith({ memory: '2GB', timeoutSeconds: 300 })
+  .firestore.document('nhsSignups/{docId}')
+  .onCreate(async (snapshot, context) => {
+    try {
+      const inviteId = await snapshot.data().invite.id;
+      return db.doc(`invites/${inviteId}`).update({ sendInvite: true });
+    } catch (error) {
+      console.log('error on triggerNhsInvite', error);
+    }
+  });
+
+const inviteSender = functions
+  .region('europe-west2')
+  .runWith({ memory: '2GB', timeoutSeconds: 300 })
+  .firestore.document('invites/{docId}')
+  .onWrite(async (snapshot, context) => {
+    try {
+      if (
+        snapshot.after.data().sendInvite &&
+        snapshot.after.data().sendInvite !== snapshot.before.data().sendInvite
+      ) {
+        await db
+          .collection(snapshot.after.data().collection)
+          .where('invite', '==', snapshot.after.ref)
+          .get()
+          .then((res) => {
+            const inviteCode = snapshot.after.data().inviteCode;
+            const email = res.docs[0].data().email;
+            return sendInvite(inviteCode, email);
+          });
+      }
+    } catch (error) {
+      console.log('error on inviteSender', error);
+    }
+  });
+
+/* Need to move these into utils */
+
 const workers = {
   asdaDeliveryScan: async (postcode, email, docId) => {
     const url =
@@ -177,6 +232,8 @@ const updatePerformAt = (snapshot) => {
   return db.doc(`jobs/${snapshot.id}`).update({ performAt, state: 'Active' });
 };
 
+/*********************************************************/
+
 module.exports = {
   taskRunner,
   checkPerformAt,
@@ -190,4 +247,8 @@ module.exports = {
   checkIceland,
   checkSainsburys,
   IcelandDelivery,
+  sendInvite,
+  inviteSender,
+  triggerGeneralInvite,
+  triggerNhsInvite,
 };

@@ -2,6 +2,10 @@ import { BrowserModule, Title } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
 import { AngularFireModule } from '@angular/fire';
+import {
+  AngularFireAnalyticsModule,
+  ScreenTrackingService,
+} from '@angular/fire/analytics';
 import { AngularFirestoreModule, SETTINGS } from '@angular/fire/firestore';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 import { environment } from '../environments/environment';
@@ -41,6 +45,7 @@ import { RequestAccessGeneralComponent } from './request-access/request-access-g
     HttpClientModule,
     AppRoutingModule,
     AngularFireModule.initializeApp(environment.firebaseConfig),
+    AngularFireAnalyticsModule,
     AngularFirestoreModule, // imports firebase/firestore, only needed for database features
     AngularFireAuthModule, // imports firebase/auth, only needed for auth features
     ReactiveFormsModule,
@@ -50,6 +55,7 @@ import { RequestAccessGeneralComponent } from './request-access/request-access-g
   providers: [
     AuthGuard,
     Title,
+    ScreenTrackingService,
     // **** for local use ******
     {
       provide: SETTINGS,
