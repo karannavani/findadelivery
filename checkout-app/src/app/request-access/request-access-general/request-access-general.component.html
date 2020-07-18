@@ -24,9 +24,15 @@
   <div *ngIf="submitted" class="alert alert-secondary row m-0" role="alert">
     <div class="col-12 text-center">
       <h5 class="alert-heading">Thank you!</h5>
-      Your invite will be sent to <strong>{{ email.value }}</strong>
+      <p>
+        Your invite will be sent to <strong>{{ email.value }}</strong>
+      </p>
+      <p style="font-style: italic;">
+        The email may end up in your spam, so keep an eye out in your spam/junk
+        folders.
+      </p>
     </div>
-    <p></p>
+
     <div class="col-12 col-md-6 col-lg-5 my-4 mx-auto">
       <img
         src="../../../assets/register/new_message.svg"
