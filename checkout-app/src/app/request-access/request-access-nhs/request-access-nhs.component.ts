@@ -20,7 +20,11 @@ export class RequestAccessNhsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {}
 
   onSubmit(): any {
-    if (this.email.valid && this.email.value.endsWith('nhs.uk')) {
+    if (
+      this.email.valid &&
+      (this.email.value.endsWith('nhs.uk') ||
+        this.email.value.endsWith('nhs.net'))
+    ) {
       this.subscriptions.add(
         this.requestAccessService
           .checkIfEmailExists(this.email.value, 'nhsSignups')
@@ -54,7 +58,7 @@ export class RequestAccessNhsComponent implements OnInit, OnDestroy {
     } else if (this.email.invalid) {
       this.error = 'Please enter a valid email address';
     } else if (!this.email.value.endsWith('nhs.uk')) {
-      this.error = 'Please enter an email ending with "@nhs.uk"';
+      this.error = 'Please enter an email ending with "nhs.uk" or "nhs.net';
     } else {
       this.error = 'Please enter a valid email address';
     }
